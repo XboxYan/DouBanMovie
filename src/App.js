@@ -19,8 +19,7 @@ const TabNavigatorConfig = {
             backgroundColor: '#fff',
             borderTopWidth:0,
         }
-    },
-    
+    }
 }
 
 //Root

@@ -13,25 +13,16 @@ import {
 } from 'react-native';
 
 import TabItem from '../compoents/TabItem';
-
-class AppTop extends PureComponent {
-    render(){
-        return (
-            <View>
-            
-            </View>
-        )
-    }
-}
+import AppTop from '../compoents/AppTop';
 
 export default class Home extends PureComponent {
     static navigationOptions = {
-        tabBarIcon: ({ focused, tintColor }) => <TabItem label='推荐' icon='whatshot' active={focused} />,
+        tabBarIcon: ({ focused, tintColor }) => <TabItem label='推荐' icon='fire' active={focused} />,
     }
     render() {
         return (
             <View style={styles.content}>
-                <AppTop/>
+                <AppTop title='推荐' />
             </View>
         )
     }

@@ -5,7 +5,7 @@ import {
 	View,
 } from 'react-native';
 import { observer } from 'mobx-react/native';
-import Icon from 'react-native-vector-icons/MaterialIcons';
+import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import _ from '../theme';
 
 @observer
