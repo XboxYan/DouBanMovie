@@ -1,4 +1,4 @@
-import React, { PureComponent, PropTypes } from 'react';
+import React, { PureComponent } from 'react';
 import {
 	StyleSheet,
 	Text,
@@ -13,36 +13,6 @@ import Touchable from './Touchable';
 import Loading from './Loading';
 import Image from './Image';
 import VideoContentView from '../pages/Movie/VideoContentView';
-
-
-const MovieLoadView = () => (
-	<View style={styles.movieloadcontent}>
-		<View style={styles.movieitem}>
-			<View style={styles.movieimgwrap} />
-			<View style={styles.movieloadtext} />
-		</View>
-		<View style={styles.movieitem}>
-			<View style={styles.movieimgwrap} />
-			<View style={styles.movieloadtext} />
-		</View>
-		<View style={styles.movieitem}>
-			<View style={styles.movieimgwrap} />
-			<View style={styles.movieloadtext} />
-		</View>
-		<View style={styles.movieitem}>
-			<View style={styles.movieimgwrap} />
-			<View style={styles.movieloadtext} />
-		</View>
-		<View style={styles.movieitem}>
-			<View style={styles.movieimgwrap} />
-			<View style={styles.movieloadtext} />
-		</View>
-		<View style={styles.movieitem}>
-			<View style={styles.movieimgwrap} />
-			<View style={styles.movieloadtext} />
-		</View>
-	</View>
-)
 
 const MovieEmpty = () => (
 	<View style={styles.flexcon}>

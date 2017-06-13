@@ -1,7 +1,7 @@
 /**
  * AppTop
  */
-import React, { Component, PropTypes } from 'react';
+import React, { Component } from 'react';
 import {
 	StyleSheet,
 	Text,
@@ -17,7 +17,7 @@ export default class AppTop extends Component {
 
 	componentDidMount(){
 		setTimeout(()=>{
-			_.SetTheme('#6b52ae')
+			//_.SetTheme('#6b52ae')
 		},2000)
 	}
 

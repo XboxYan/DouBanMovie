@@ -2,7 +2,7 @@
  * Loading
  */
 
-import React, { PureComponent,PropTypes } from 'react';
+import React, { Component } from 'react';
 import {
   ActivityIndicator,
   StyleSheet,
@@ -10,23 +10,13 @@ import {
   View,
 } from 'react-native';
 
-export default class Loading extends PureComponent {
+import _ from '../theme';
+import { observer } from 'mobx-react/native';
 
-  static PropTypes = {
-    color:PropTypes.string,
-    text:PropTypes.string,
-    textColor:PropTypes.string,
-    height:PropTypes.number
-  }
-
-  static defaultProps = {
-    text:'正在加载...',
-    color:'red',
-    textColor:'#666'
-  }
-
+@observer
+export default class Loading extends Component {
   render(){
-      const {height,size,color,text,textColor} = this.props;
+      const {height,size,color=_.Color,text='正在加载...',textColor='#666'} = this.props;
       return(
           <View style={[styles.content,height&&{height:height}]}>
             <ActivityIndicator color={color} size={size||'large'} />
@@ -44,7 +34,6 @@ const styles = StyleSheet.create({
   },
   loadtext:{
     fontSize:12,
-    marginTop:10
+    marginTop:10,
   }
-
 });
