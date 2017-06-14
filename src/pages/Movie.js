@@ -27,7 +27,7 @@ const TabNavigatorConfig = {
         pressColor:'none',
         borderless:false,
         style:{
-            backgroundColor:'transparent',
+            backgroundColor:_.Color,
             height:44
         },
         indicatorStyle:{
@@ -45,12 +45,12 @@ const Tab3 = observer(() => <Text>3333</Text>);
 const Tab4 = observer(() => <Text>4444</Text>);
 
 //Root
-const Tab = TabNavigator({
+const Tab = observer(TabNavigator({
     Tab1: { screen: Tab1 },
     Tab2: { screen: Tab2 },
     Tab3: { screen: Tab3 },
     Tab4: { screen: Tab4 },
-},TabNavigatorConfig);
+},TabNavigatorConfig));
 
 @observer
 export default class Movie extends Component {
@@ -59,7 +59,7 @@ export default class Movie extends Component {
     }
     render(){
         return (
-            <View style={[styles.content,{backgroundColor:_.Color}]}>
+            <View style={styles.content}>
                 <AppTop title='影视' />
                 <Tab />
             </View>

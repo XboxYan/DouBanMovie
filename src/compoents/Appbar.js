@@ -2,51 +2,34 @@
  * AppBar
  */
 
-import React, { PureComponent,PropTypes } from 'react';
+import React, { PureComponent } from 'react';
 import {
   StyleSheet,
   Text,
-  StatusBar,
   Platform,
   View,
   PixelRatio,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import Touchable from './Touchable';
+import { observer } from 'mobx-react/native';
+import _ from '../theme';
 
+@observer
 export default class AppBar extends PureComponent {
-  static PropTypes = {
-    title:PropTypes.string,
-    style:PropTypes.object,
-    isBack:PropTypes.bool
-  }
-
-  static defaultProps = {
-    title:'',
-    isBack:true
-  }
-  handle = ()=>{
-      this.props.navigator.pop();
-  }
   render() {
-    const { onPress,title,style,isBack } = this.props;
+    const { onPress, title,navigation:{goBack} } = this.props;
     return (
-      <View style={[styles.appbar,style]}>
-        {
-          isBack?
-          <Touchable
-            style={styles.btn}
-            onPress={this.handle}
-            >
-            <Icon name='keyboard-arrow-left' size={30} color={$.COLORS.subColor} />
-          </Touchable>
-          :
-          <View style={styles.btn}></View>
-        }
-        
+      <View style={[styles.appbar, { backgroundColor: _.Color }]}>
+        <Touchable
+          style={styles.btn}
+          onPress={()=>goBack()}
+        >
+          <Icon name='keyboard-arrow-left' size={30} color='#fff' />
+        </Touchable>
         <Text style={styles.apptitle} numberOfLines={1}>{title}</Text>
         {
-          this.props.children||<View style={styles.btn}></View>
+          this.props.children || <View style={styles.btn}></View>
         }
       </View>
     );
@@ -55,12 +38,9 @@ export default class AppBar extends PureComponent {
 
 const styles = StyleSheet.create({
   appbar: {
-    paddingTop:$.STATUS_HEIGHT,
-    backgroundColor:'#fff',
+    paddingTop: $.STATUS_HEIGHT,
     flexDirection: 'row',
     alignItems: 'center',
-    borderBottomWidth:1/$.PixelRatio,
-    borderBottomColor:'#ececec'
   },
   btn: {
     width: 50,
@@ -73,7 +53,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     flex: 1,
     fontSize: 16,
-    color: '#474747'
+    color: '#fff'
   }
 
 });

@@ -25,7 +25,7 @@ const API = {
     
 }
 
-export default function fetchData(url,{headers={'appVersion': appVersion},par = {} } = {},success){
+const fetchData = (url,{headers={'appVersion': appVersion},par = {} } = {},success) => {
     const URL = API[url](par);
     fetch(URL, {
         method: 'GET',
@@ -37,10 +37,12 @@ export default function fetchData(url,{headers={'appVersion': appVersion},par = 
         }
     })
     .then((data) => {
-        success&&success(data);
+        success(data);
     })
     .catch((err) => {
         console.warn(err);
     })
 }
+
+export default fetchData;
 

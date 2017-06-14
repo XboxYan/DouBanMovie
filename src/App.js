@@ -4,6 +4,7 @@ import Home from './pages/Home';
 import Movie from './pages/Movie';
 import Live from './pages/Live';
 import Me from './pages/Me';
+import HomeMore from './pages/Home/HomeMore';
 
 //TabNavigatorConfig
 const TabNavigatorConfig = {
@@ -11,6 +12,7 @@ const TabNavigatorConfig = {
     tabBarPosition:'bottom',
     animationEnabled:false,
     lazy:true,
+    //backBehavior:'none',
     swipeEnabled:false,
     tabBarOptions:{
         showLabel:false,
@@ -37,6 +39,7 @@ const StackNavigatorConfig = {
 //StackNavigator
 const App = StackNavigator({
     Root: { screen: Root },
+    HomeMore:{ screen: HomeMore }
 },StackNavigatorConfig);
 
 export default App;

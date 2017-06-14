@@ -2,7 +2,7 @@
  * Loading
  */
 
-import React, { PureComponent, PropTypes } from 'react';
+import React, { PureComponent } from 'react';
 import {
     ActivityIndicator,
     TouchableOpacity,
@@ -97,15 +97,6 @@ export default class extends PureComponent {
     @observable _currentTime = 0;
     @observable _currentBrightness = 0;
     @observable _currentVolume = 0;
-
-    static PropTypes = {
-        playUri: PropTypes.string
-    }
-
-    static defaultProps = {
-        playUri: '',
-        style:{}
-    }
 
     constructor(props) {
         super(props);

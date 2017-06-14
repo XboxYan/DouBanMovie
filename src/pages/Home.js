@@ -19,7 +19,6 @@ import {
 import TabItem from '../compoents/TabItem';
 import AppTop from '../compoents/AppTop';
 import Loading from '../compoents/Loading';
-import HomeContent from './Home/HomeContent';
 import Touchable from '../compoents/Touchable';
 import fetchData from '../util/Fetch';
 import { observable, action, computed} from 'mobx';
@@ -27,7 +26,11 @@ import { observer } from 'mobx-react/native';
 import _ from '../theme';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 
+@observer
 class MovieItem extends Component {
+    componentWillUpdate(){
+        //LayoutAnimation.easeInEaseOut();
+    }
     render() {
         const {data} = this.props;
         return (
@@ -48,17 +51,19 @@ class MovieItem extends Component {
     }
 }
 
-const MovieTitle = (props) => (
+const MovieTitle = observer((props) => (
     <View style={[styles.view_hd, { borderColor: _.Color }]}>
         <Text style={styles.view_title}>{props.title}</Text>
         <TouchableOpacity
+            disabled={!!!props.title}
+            onPress={()=>props.navigation.navigate('HomeMore',{id:props.id,title:props.title})}
             style={styles.view_more}
         >
             <Text style={styles.view_moretext}>更多</Text>
             <Icon name='navigate-next' size={20} color={_.Color} />
         </TouchableOpacity>
     </View>
-)
+))
 
 @observer
 export default class Home extends Component {
@@ -90,27 +95,25 @@ export default class Home extends Component {
     componentDidMount() {
         fetchData('index',{},
             (data)=>{
-                LayoutAnimation.easeInEaseOut();
                 this.data = data.body;
                 this.isRender = true;
-                
             }
         )
     }
 
     componentWillUpdate(){
-        //LayoutAnimation.linear();
+        LayoutAnimation.easeInEaseOut();
     }
 
     render() {
         const { navigation } = this.props;
-        let [movie_score,movie_free_stream,movie_latest,douban] = this.doubanTopicList;
+        let [movie_score={},movie_free_stream={},movie_latest={},douban={}] = this.doubanTopicList;
         return (
             <View style={styles.content}>
                 <AppTop title='推荐' />
                 <ScrollView style={styles.content}>
                     <View style={styles.viewcon}>
-                        <MovieTitle title={this.isRender?douban.name:''} />
+                        <MovieTitle title={this.isRender?douban.name:''} id={douban.id} navigation={navigation} />
                         <View style={styles.view_bd}>
                             {
                                 this.isRender?
@@ -121,7 +124,7 @@ export default class Home extends Component {
                         </View>
                     </View>
                     <View style={styles.viewcon}>
-                        <MovieTitle title={this.isRender?movie_free_stream.name:''} />
+                        <MovieTitle title={this.isRender?movie_free_stream.name:''} id={movie_free_stream.id} navigation={navigation} />
                         <View style={styles.view_bd}>
                             {
                                 this.isRender?
@@ -132,7 +135,7 @@ export default class Home extends Component {
                         </View>
                     </View>
                     <View style={styles.viewcon}>
-                        <MovieTitle title={this.isRender?movie_latest.name:''} />
+                        <MovieTitle title={this.isRender?movie_latest.name:''} id={movie_latest.id} navigation={navigation} />
                         <View style={styles.view_bd}>
                             {
                                 this.isRender?
@@ -143,7 +146,7 @@ export default class Home extends Component {
                         </View>
                     </View>
                     <View style={styles.viewcon}>
-                        <MovieTitle title={this.isRender?movie_score.name:''} />
+                        <MovieTitle title={this.isRender?movie_score.name:''} id={movie_score.id} navigation={navigation} />
                         <View style={styles.view_bd}>
                             {
                                 this.isRender?

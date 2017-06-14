@@ -21,7 +21,6 @@ const Touchable = (props) => (
     </TouchableOpacity>
     :
     <TouchableNativeFeedback
-        delayPressIn={50}
         disabled={props.disabled}
         onPress={props.onPress}
         onLongPress={props.onLongPress}

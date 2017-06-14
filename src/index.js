@@ -24,7 +24,7 @@ class DouBan extends PureComponent {
         return (
             <View style={{flex:1}}>
                 <StatusBar translucent={true} backgroundColor='transparent' />
-                <App/>
+                <App />
             </View>
         )
     }
