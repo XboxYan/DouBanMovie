@@ -1,5 +1,6 @@
 import React, { PureComponent } from 'react';
 import { StackNavigator, TabNavigator, TabBarBottom } from "react-navigation";
+import CardStackStyleInterpolator from 'react-navigation/src/views/CardStackStyleInterpolator'
 import Home from './pages/Home';
 import Movie from './pages/Movie';
 import Live from './pages/Live';
@@ -34,7 +35,13 @@ const Root = TabNavigator({
 
 //StackNavigatorConfig
 const StackNavigatorConfig = {
-    headerMode:'none'
+    headerMode:'none',
+    navigationOptions:{
+        gesturesEnabled:true
+    },
+    transitionConfig: () => ({
+        screenInterpolator: CardStackStyleInterpolator.forHorizontal
+    })
 }
 //StackNavigator
 const App = StackNavigator({

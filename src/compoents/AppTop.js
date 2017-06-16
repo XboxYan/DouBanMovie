@@ -42,7 +42,6 @@ const styles = StyleSheet.create({
 		paddingTop: $.STATUS_HEIGHT,
 		alignItems: 'center',
 		flexDirection: 'row',
-		paddingHorizontal: 5,
 	},
 	title: {
 		flex: 1,
@@ -51,8 +50,8 @@ const styles = StyleSheet.create({
 		marginLeft:20
 	},
 	ico: {
-		width: 44,
-		height: 44,
+		width: 48,
+		height: 48,
 		justifyContent: 'center',
 		alignItems: 'center',
 	},

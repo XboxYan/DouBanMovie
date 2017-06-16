@@ -43,8 +43,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   btn: {
-    width: 50,
-    height: 50,
+    width: 48,
+    height: 48,
     zIndex: 1,
     justifyContent: 'center',
     alignItems: 'center',
