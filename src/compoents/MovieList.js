@@ -4,15 +4,16 @@ import {
 	Text,
 	UIManager,
 	ActivityIndicator,
+	TouchableOpacity,
 	LayoutAnimation,
+	Image,
 	FlatList,
 	View,
 } from 'react-native';
 
-import Touchable from './Touchable';
 import Loading from './Loading';
-import Image from './Image';
-import VideoContentView from '../pages/Movie/VideoContentView';
+import LoadView from './LoadView';
+import Image1 from './Image';
 
 const MovieEmpty = () => (
 	<View style={styles.flexcon}>
@@ -21,36 +22,19 @@ const MovieEmpty = () => (
 )
 
 const MovieItem = (props) => (
-	<Touchable
-		onPress={() => props.navigator.push({ name: VideoContentView, item: props.item })}
+	<TouchableOpacity
+		activeOpacity={.8}
+		onPress={() => {}}
 		style={styles.movieitem}>
-		<View style={styles.movieimgwrap}>
-			<Image 
-				style={styles.movieimg}
-				source={{uri:Base+(props.item.imageList.length>0?props.item.imageList[0].posterUrl:'')}}
-				defaultSource={require('../../img/poster_moren.png')}
-			/>
-		</View>
+		<Image 
+			style={styles.movieimg}
+			source={{uri:props.item.img}}
+			defaultSource={require('../img/img_place.png')}
+		/>
 		<View style={styles.movietext}>
-			<Text numberOfLines={1} style={styles.moviename}>{props.item.titleBrief}</Text>
+			<Text numberOfLines={1} style={styles.moviename}>{props.item.name}</Text>
 		</View>
-	</Touchable>
-)
-
-const LoadView = (props) => (
-    <View style={styles.loadview}>
-		{
-			props.isEnding?
-			<View style={styles.loadmore}>
-				<Text style={styles.loadtext}>没有更多了 </Text>
-			</View>
-			:
-			<View style={styles.loadmore}>
-				<ActivityIndicator size='small' color={$.COLORS.mainColor} />
-				<Text style={styles.loadtext}>正在加载影片...</Text>
-			</View>
-		}
-    </View>
+	</TouchableOpacity>
 )
 
 export default class extends PureComponent {
@@ -93,7 +77,7 @@ export default class extends PureComponent {
 				data={[...data]}
 				onEndReached={onEndReached}
 				onEndReachedThreshold={0.1}
-				keyExtractor={(item, index) => item.assetId}
+				keyExtractor={(item, index) => item.movieId}
 				renderItem={this.renderItem}
 			/>
 		)
@@ -104,18 +88,17 @@ const styles = StyleSheet.create({
 	content: {
 		flex: 1,
 		paddingHorizontal: 5,
+		paddingTop:10,
 	},
 	movieitem: {
-		width: ($.WIDTH - 28) / 3,
-		marginHorizontal: 3,
-	},
-	movieimgwrap: {
-		height: ($.WIDTH - 28) / 2,
-		backgroundColor: '#f1f1f1'
+		width: ($.WIDTH - 40) / 3,
+		marginHorizontal: 5,
 	},
 	movieimg: {
 		width: '100%',
+		height:($.WIDTH - 40) / 2,
 		flex: 1,
+		borderRadius:3,
 		resizeMode: 'cover'
 	},
 	movietext: {
@@ -148,17 +131,4 @@ const styles = StyleSheet.create({
 		justifyContent: 'center',
 		alignItems: 'center',
 	},
-	loadview:{
-		padding:20,
-		alignItems: 'center',
-	},
-	loadtext:{
-		color:'#ccc',
-		fontSize:14,
-		paddingHorizontal:5
-	},
-	loadmore:{
-		flexDirection:'row',
-		justifyContent: 'center',
-	}
 });

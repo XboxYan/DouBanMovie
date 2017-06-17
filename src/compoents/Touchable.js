@@ -25,7 +25,7 @@ const Touchable = (props) => (
         onPress={props.onPress}
         onLongPress={props.onLongPress}
         onLayout={props.onLayout} 
-        background={TouchableNativeFeedback.SelectableBackground()} >
+        background={TouchableNativeFeedback.Ripple('rgba(0,0,0,0.1)',false)} >
         <View style={props.style}>{props.children}</View>
     </TouchableNativeFeedback>
 )

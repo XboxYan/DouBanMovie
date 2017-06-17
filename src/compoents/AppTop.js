@@ -52,6 +52,7 @@ const styles = StyleSheet.create({
 	ico: {
 		width: 48,
 		height: 48,
+		backgroundColor:'rgba(0,0,0,0)',
 		justifyContent: 'center',
 		alignItems: 'center',
 	},

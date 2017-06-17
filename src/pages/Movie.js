@@ -33,7 +33,7 @@ const TabNavigatorConfig = {
         indicatorStyle:{
             backgroundColor:'#fff',
             borderRadius:2,
-            bottom:1
+            bottom:2,
         },
     },
     

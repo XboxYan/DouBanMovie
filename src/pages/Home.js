@@ -19,7 +19,8 @@ import {
 import TabItem from '../compoents/TabItem';
 import AppTop from '../compoents/AppTop';
 import Loading from '../compoents/Loading';
-import Touchable from '../compoents/Touchable';
+import MovieList from '../compoents/MovieList';
+
 import fetchData from '../util/Fetch';
 import { observable, action, computed} from 'mobx';
 import { observer } from 'mobx-react/native';
@@ -34,19 +35,18 @@ class MovieItem extends Component {
     render() {
         const {data} = this.props;
         return (
-            <Touchable
+            <TouchableOpacity
                 onPress={() => {}}
+                activeOpacity={.7}
                 style={styles.movieitem}>
-                <View style={styles.movieimgwrap}>
-                    <Image
-                        style={styles.movieimg}
-                        source={{ uri: data.img }}
-                    />
-                </View>
+                <Image
+                    style={styles.movieimg}
+                    source={{ uri: data.img }}
+                />
                 <View style={styles.movietext}>
                     <Text numberOfLines={1} style={styles.moviename}>{data.name}</Text>
                 </View>
-            </Touchable>
+            </TouchableOpacity>
         )
     }
 }
@@ -102,7 +102,7 @@ export default class Home extends Component {
     }
 
     componentWillUpdate(){
-        LayoutAnimation.easeInEaseOut();
+        //LayoutAnimation.easeInEaseOut();
     }
 
     render() {
@@ -114,47 +114,19 @@ export default class Home extends Component {
                 <ScrollView style={styles.content}>
                     <View style={styles.viewcon}>
                         <MovieTitle title={this.isRender?douban.name:''} id={douban.id} navigation={navigation} />
-                        <View style={styles.view_bd}>
-                            {
-                                this.isRender?
-                                douban.subjects.map((data)=>(<MovieItem key={data.movieId} data={data} />))
-                                :
-                                <Loading size='small' text='' height={100} />
-                            }
-                        </View>
+                        <MovieList isRender={this.isRender} data={douban.subjects} />
                     </View>
                     <View style={styles.viewcon}>
                         <MovieTitle title={this.isRender?movie_free_stream.name:''} id={movie_free_stream.id} navigation={navigation} />
-                        <View style={styles.view_bd}>
-                            {
-                                this.isRender?
-                                movie_free_stream.subjects.map((data)=>(<MovieItem key={data.movieId} data={data} />))
-                                :
-                                <Loading size='small' text='' height={100} />
-                            }
-                        </View>
+                        <MovieList isRender={this.isRender} data={movie_free_stream.subjects} />
                     </View>
                     <View style={styles.viewcon}>
                         <MovieTitle title={this.isRender?movie_latest.name:''} id={movie_latest.id} navigation={navigation} />
-                        <View style={styles.view_bd}>
-                            {
-                                this.isRender?
-                                movie_latest.subjects.map((data)=>(<MovieItem key={data.movieId} data={data} />))
-                                :
-                                <Loading size='small' text='' height={100} />
-                            }
-                        </View>
+                        <MovieList isRender={this.isRender} data={movie_latest.subjects} />
                     </View>
                     <View style={styles.viewcon}>
                         <MovieTitle title={this.isRender?movie_score.name:''} id={movie_score.id} navigation={navigation} />
-                        <View style={styles.view_bd}>
-                            {
-                                this.isRender?
-                                movie_score.subjects.map((data)=>(<MovieItem key={data.movieId} data={data} />))
-                                :
-                                <Loading size='small' text='' height={100} />
-                            }
-                        </View>
+                        <MovieList isRender={this.isRender} data={movie_score.subjects} />
                     </View>
                 </ScrollView>
             </View>
@@ -167,11 +139,10 @@ const styles = StyleSheet.create({
         flex: 1
     },
     viewcon: {
-        margin: 10,
-        marginBottom: 0,
-        borderRadius: 3,
+        marginBottom: 10,
         backgroundColor: '#fff',
-        paddingVertical: 10
+        paddingVertical: 10,
+        minHeight:150
     },
     view_hd: {
         height: 16,
@@ -179,7 +150,8 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         paddingHorizontal: 10,
-        marginVertical: 5,
+        marginVertical: 10,
+        marginLeft:10
     },
     view_title: {
         fontSize: 16,
@@ -193,35 +165,5 @@ const styles = StyleSheet.create({
     view_moretext: {
         fontSize: 13,
         color: '#999'
-    },
-    view_bd: {
-        flexDirection: 'row',
-        paddingHorizontal: 10,
-        marginTop: 10
-    },
-    movieitem: {
-        flex: 1,
-        width: 120,
-        marginHorizontal: 3,
-    },
-    movieimgwrap: {
-        height: ($.WIDTH - 68) / 2,
-        backgroundColor: '#f1f1f1'
-    },
-    movieimg: {
-        width: '100%',
-        flex: 1,
-        resizeMode: 'cover'
-    },
-    movietext: {
-        alignItems: 'center',
-        height: 34,
-        flexDirection: 'row'
-    },
-    moviename: {
-        fontSize: 14,
-        color: '#333',
-        textAlign: 'center',
-        flex: 1
     },
 })

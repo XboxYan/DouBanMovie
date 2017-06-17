@@ -40,7 +40,7 @@ export default class extends PureComponent {
                 {
                     this.state.isLoaded && !this.state.isError ? null :
                         <Image
-                            style={[styles.defaultSourceStyles, this.props.defaultSourceStyle]}
+                            style={[this.props.style]}
                             source={this.props.defaultSource }
                         />
                 }
@@ -49,12 +49,3 @@ export default class extends PureComponent {
     }
 }
 
-const styles = {
-    defaultSourceStyles: {
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-        width: '100%',
-		resizeMode: 'cover'
-    }
-}
