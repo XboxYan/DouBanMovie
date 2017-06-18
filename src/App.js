@@ -6,6 +6,7 @@ import Movie from './pages/Movie';
 import Live from './pages/Live';
 import Me from './pages/Me';
 import HomeMore from './pages/Home/HomeMore';
+import MovieDetail from './pages/MovieDetail';
 
 //TabNavigatorConfig
 const TabNavigatorConfig = {
@@ -46,7 +47,8 @@ const StackNavigatorConfig = {
 //StackNavigator
 const App = StackNavigator({
     Root: { screen: Root },
-    HomeMore:{ screen: HomeMore }
+    HomeMore:{ screen: HomeMore },
+    MovieDetail:{ screen: MovieDetail}
 },StackNavigatorConfig);
 
 export default App;

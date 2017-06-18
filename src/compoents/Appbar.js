@@ -50,7 +50,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   apptitle: {
-    textAlign: 'center',
     flex: 1,
     fontSize: 16,
     color: '#fff'

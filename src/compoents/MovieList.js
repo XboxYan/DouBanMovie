@@ -24,7 +24,7 @@ const MovieEmpty = () => (
 const MovieItem = (props) => (
 	<TouchableOpacity
 		activeOpacity={.8}
-		onPress={() => {}}
+		onPress={() => props.navigation.navigate('MovieDetail',{movieId:props.item.movieId,doubanId:props.item.doubanId})}
 		style={styles.movieitem}>
 		<Image 
 			style={styles.movieimg}
@@ -45,7 +45,7 @@ export default class extends PureComponent {
 	}
 
 	renderItem = ({ item, index }) => {
-		return <MovieItem item={item} navigator={this.props.navigator} />
+		return <MovieItem item={item} navigation={this.props.navigation} />
 	}
 	componentDidUpdate(nextProps, nextState) {
 		//LayoutAnimation.easeInEaseOut();
