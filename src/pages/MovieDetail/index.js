@@ -18,6 +18,7 @@ import { observer } from 'mobx-react/native';
 import _ from '../../theme';
 import fetchData from '../../util/Fetch';
 import Loading from '../../compoents/Loading';
+import Video from 'react-native-video';
 
 const SortTitle = observer((props) => (
     <View style={[styles.view_hd, { borderColor: _.Color }]}>
@@ -85,6 +86,22 @@ export default class MovieDetail extends Component {
         return (
             <View style={styles.content}>
                 <View style={styles.video_place}/>
+                {
+                    this.isRender?
+                    <Video
+                        ref={(ref) => { this.video = ref }}
+                        source={{ uri: this.data.videos[0].playerUrl }}
+                        resizeMode="contain"
+                        controls={true}
+                        style={styles.fullScreen}
+                        playInBackground={false}
+                        paused={false}
+                        repeat={false}
+                    />
+                    :
+                    null
+                }
+                
                 <Text style={styles.movieTitle}>{this.DoubanisRender?this.Doubandata.title:'加载中..'}</Text>
                 <ScrollView style={styles.content}>
                     <View style={styles.viewcon}>
@@ -148,5 +165,13 @@ const styles = StyleSheet.create({
         fontSize:14,
         color:'#666',
         lineHeight:20
+    },
+    fullScreen:{
+        position: 'absolute',
+        zIndex:10,
+        top: 0,
+        left: 0,
+        right:0,
+        height:$.WIDTH*9/16
     }
 })
