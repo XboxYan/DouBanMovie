@@ -10,6 +10,7 @@ import {
     StyleSheet,
     ScrollView,
     UIManager,
+    Animated,
     Image,
     LayoutAnimation,
     View,
@@ -40,6 +41,8 @@ export default class MovieDetail extends Component {
     movieId = '';
 
     doubanId = '';
+
+    scrollTop = new Animated.Value(0);
 
     @observable data = {};
 
@@ -91,6 +94,9 @@ export default class MovieDetail extends Component {
         const { navigation } = this.props;
         navigation.goBack();
     }
+    onScroll = (e) => {
+        this.scrollTop.setValue(e.nativeEvent.contentOffset.y);
+    }
     render() {
         const { navigation } = this.props;
         const { params:{ item:{img,name}} } = navigation.state;
@@ -104,15 +110,44 @@ export default class MovieDetail extends Component {
                         <Icon name='keyboard-arrow-left' size={30} color='#fff' />
                     </Touchable>
                     <Text style={styles.apptitle} numberOfLines={1}>{this.name||name}</Text>
-                    <View style={[styles.fullcon, { backgroundColor: _.Color }, { opacity: 0 }]} />
+                    <Animated.View style={[styles.fullcon, { backgroundColor: _.Color }, { 
+                        opacity: this.scrollTop.interpolate({
+                            inputRange: [0, $.STATUS_HEIGHT + 50],
+                            outputRange: [0, 1]
+                        }) 
+                    }]} />
                 </View>
-                <ScrollView showsVerticalScrollIndicator={false} style={styles.content}>
-                    <View style={[styles.bg_place, { backgroundColor: _.Color }]}><Image resizeMode='cover' source={{ uri: img }} style={styles.bg_img} /></View>
-                    <View style={{ height: $.STATUS_HEIGHT + 48 }} />
+                <ScrollView onScroll={this.onScroll} showsVerticalScrollIndicator={false} style={styles.content}>
+                    <Image resizeMode='cover' blurRadius={4} source={{ uri: img }} style={[styles.bg_place,{ backgroundColor: _.Color }]} />
+                    <View style={{ height: $.STATUS_HEIGHT + 50 }} />
                     <View style={[styles.viewcon,styles.row]}>
-                        <View style={styles.poster}><Image source={{ uri: img }} style={styles.fullcon} /></View>
+                        <View style={styles.poster}><Image source={{ uri: img }} style={[styles.fullcon,styles.borR]} /></View>
                         <View style={styles.postertext}>
                             <Text style={styles.title}>{this.name||name}</Text>
+                        </View>
+                    </View>
+                    <View style={styles.viewcon}>
+                        <SortTitle title='简介' />
+                        <View style={styles.summary}>
+                            {
+                                this.DoubanisRender
+                                    ?
+                                    <Text style={styles.text}>{this.Doubandata.summary}</Text>
+                                    :
+                                    <Loading size='small' text='' />
+                            }
+                        </View>
+                    </View>
+                    <View style={styles.viewcon}>
+                        <SortTitle title='简介' />
+                        <View style={styles.summary}>
+                            {
+                                this.DoubanisRender
+                                    ?
+                                    <Text style={styles.text}>{this.Doubandata.summary}</Text>
+                                    :
+                                    <Loading size='small' text='' />
+                            }
                         </View>
                     </View>
                     <View style={styles.viewcon}>
@@ -142,13 +177,8 @@ const styles = StyleSheet.create({
         left: 0,
         top: 0,
         right: 0,
-        height: 200
-    },
-    bg_img: {
-        width: '100%',
-        height: '100%',
-        opacity: .3,
-        resizeMode: 'cover'
+        resizeMode: 'cover',
+        height: $.WIDTH * 9 / 16
     },
     video_place: {
         height: $.WIDTH * 9 / 16,
@@ -208,6 +238,7 @@ const styles = StyleSheet.create({
         paddingTop: $.STATUS_HEIGHT,
         flexDirection: 'row',
         alignItems: 'center',
+        zIndex:10
     },
     fullcon: {
         position: 'absolute',
@@ -215,8 +246,10 @@ const styles = StyleSheet.create({
         top: 0,
         right: 0,
         bottom: 0,
-        borderRadius: 3,
         zIndex: 0
+    },
+    borR:{
+        borderRadius: 3,
     },
     btn: {
         width: 48,
