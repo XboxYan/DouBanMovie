@@ -10,6 +10,7 @@ import {
     StyleSheet,
     ScrollView,
     UIManager,
+    TouchableOpacity,
     Animated,
     Image,
     LayoutAnimation,
@@ -109,7 +110,20 @@ export default class MovieDetail extends Component {
                     >
                         <Icon name='keyboard-arrow-left' size={30} color='#fff' />
                     </Touchable>
-                    <Text style={styles.apptitle} numberOfLines={1}>{this.name||name}</Text>
+                    <View style={styles.apptitle}>
+                        <Animated.Text style={[styles.apptitletext,{
+                            opacity: this.scrollTop.interpolate({
+                                inputRange: [$.STATUS_HEIGHT + 40,$.STATUS_HEIGHT + 41],
+                                outputRange: [1, 0]
+                            }) 
+                        }]} numberOfLines={1}>影视详情</Animated.Text>
+                        <Animated.Text style={[styles.apptitletext,{
+                            opacity: this.scrollTop.interpolate({
+                                inputRange: [$.STATUS_HEIGHT + 40, $.STATUS_HEIGHT + 41],
+                                outputRange: [0, 1]
+                            }) 
+                        }]} numberOfLines={1}>{this.name||name}</Animated.Text>
+                    </View>
                     <Animated.View style={[styles.fullcon, { backgroundColor: _.Color }, { 
                         opacity: this.scrollTop.interpolate({
                             inputRange: [0, $.STATUS_HEIGHT + 50],
@@ -123,7 +137,10 @@ export default class MovieDetail extends Component {
                     <View style={[styles.viewcon,styles.row]}>
                         <View style={styles.poster}><Image source={{ uri: img }} style={[styles.fullcon,styles.borR]} /></View>
                         <View style={styles.postertext}>
-                            <Text style={styles.title}>{this.name||name}</Text>
+                            <Text style={[styles.title,{color:_.Color}]}>{this.name||name}</Text>
+                            <TouchableOpacity>
+                                <Text>播放</Text>
+                            </TouchableOpacity>
                         </View>
                     </View>
                     <View style={styles.viewcon}>
@@ -260,9 +277,15 @@ const styles = StyleSheet.create({
     },
     apptitle: {
         flex: 1,
+        marginRight:10,
+        justifyContent: 'center',
+        alignSelf:'stretch',
+        zIndex: 1
+    },
+    apptitletext:{
+        position: 'absolute',
         fontSize: 16,
         color: '#fff',
-        zIndex: 1
     },
     poster:{
         padding:10,
@@ -274,6 +297,11 @@ const styles = StyleSheet.create({
     },
     postertext:{
         flex:1,
-        marginRight:10
+        marginRight:10,
+        marginLeft:5
+    },
+    title:{
+        fontSize:16,
+        color:'#333'
     }
 })
