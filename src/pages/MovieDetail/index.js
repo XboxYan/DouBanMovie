@@ -49,7 +49,15 @@ export default class MovieDetail extends Component {
 
     @observable isRender = false;
 
+    @computed get status() {
+        return this.data.status
+    }
+
     @observable Doubandata = {};
+
+    @computed get summary() {
+        return this.Doubandata.summary||this.data.desc
+    }
 
     @computed get name() {
         return this.Doubandata.title
@@ -67,6 +75,7 @@ export default class MovieDetail extends Component {
             (data) => {
                 this.data = data.body;
                 this.isRender = true;
+                LayoutAnimation.spring();
             }
         )
     }
@@ -138,6 +147,7 @@ export default class MovieDetail extends Component {
                         <View style={styles.poster}><Image source={{ uri: img }} style={[styles.fullcon,styles.borR]} /></View>
                         <View style={styles.postertext}>
                             <Text style={[styles.title,{color:_.Color}]}>{this.name||name}</Text>
+                            <Text style={styles.title}>{this.status}</Text>
                             <TouchableOpacity>
                                 <Text>播放</Text>
                             </TouchableOpacity>
@@ -149,7 +159,7 @@ export default class MovieDetail extends Component {
                             {
                                 this.DoubanisRender
                                     ?
-                                    <Text style={styles.text}>{this.Doubandata.summary}</Text>
+                                    <Text style={styles.text}>{this.summary}</Text>
                                     :
                                     <Loading size='small' text='' />
                             }
@@ -161,7 +171,7 @@ export default class MovieDetail extends Component {
                             {
                                 this.DoubanisRender
                                     ?
-                                    <Text style={styles.text}>{this.Doubandata.summary}</Text>
+                                    <Text style={styles.text}>{this.summary}</Text>
                                     :
                                     <Loading size='small' text='' />
                             }
@@ -173,7 +183,7 @@ export default class MovieDetail extends Component {
                             {
                                 this.DoubanisRender
                                     ?
-                                    <Text style={styles.text}>{this.Doubandata.summary}</Text>
+                                    <Text style={styles.text}>{this.summary}</Text>
                                     :
                                     <Loading size='small' text='' />
                             }
