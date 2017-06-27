@@ -1,5 +1,6 @@
 import React, { PureComponent } from 'react';
 import { StackNavigator, TabNavigator, TabBarBottom } from "react-navigation";
+import { Platform } from 'react-native';
 import CardStackStyleInterpolator from 'react-navigation/src/views/CardStackStyleInterpolator'
 import Home from './pages/Home';
 import Movie from './pages/Movie';
@@ -45,10 +46,17 @@ const StackNavigatorConfig = {
     })
 }
 //StackNavigator
-const App = StackNavigator({
-    Root: { screen: Root },
+const MainApp = StackNavigator({
+    Root: { screen: Root,path:'home/root' },
     HomeMore:{ screen: HomeMore },
-    MovieDetail:{ screen: MovieDetail}
+    MovieDetail:{ 
+        screen: MovieDetail,
+        path:'movie/:movieid'
+    }
 },StackNavigatorConfig);
+
+const prefix = Platform.OS == 'android' ? 'doubanmovie://doubanmovie/' : 'doubanmovie://';
+
+const App = () => <MainApp uriPrefix={prefix} />;
 
 export default App;

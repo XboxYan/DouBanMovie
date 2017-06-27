@@ -17,7 +17,7 @@ const API = {
     //发现好电影详情列表
     doulist_items:({id='',page=1,pageSize=15}) => `${Base}doulist_items?id=${id}&page=${page}&pageSize=${pageSize}`,
     //影片详情
-    video:({isAlbum=false,videoId=''}) => `${Base}video?isAlbum=${isAlbum}&videoId=${videoId}`,
+    video:({isAlbum=false,videoId=''}) => `${Base}video?videoId=${videoId}`,
     //获取影片详情（豆瓣）
     douban_subject:({id=''}) => `https://api.douban.com/v2/movie/subject/${id}`,
     //搜索
