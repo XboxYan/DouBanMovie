@@ -4,7 +4,7 @@
 
 ### 请求示例
 
-> http://43.241.224.161/api/index
+> http://116.62.150.164/newmovie/api/index
 
 ### 返回示例
 
@@ -1076,7 +1076,7 @@
 
 * id=movie_score
 
-> http://43.241.224.161/api/more_douban_topic_items?id=movie_score&page=1&pageSize=15
+> http://116.62.150.164/newmovie/api/more_douban_topic_items?id=movie_score&page=1&pageSize=15
 
 ### 返回示例
 
@@ -1305,7 +1305,7 @@
 
 ### 请求示例
 
-> http://43.241.224.161/api/more_doulist?page=1&pageSize=15
+> http://116.62.150.164/newmovie/api/more_doulist?page=1&pageSize=15
 
 ### 返回示例
 
@@ -1390,7 +1390,7 @@
 
 ### 请求示例
 
-> http://43.241.224.161/api/doulist_info?id=968362
+> http://116.62.150.164/newmovie/api/doulist_info?id=968362
 
 ### 返回示例
 
@@ -1414,7 +1414,7 @@
 
 ### 请求示例
 
-> http://43.241.224.161/api/doulist_items?id=968362&page=1&pageSize=15
+> http://116.62.150.164/newmovie/api/doulist_items?id=968362&page=1&pageSize=15
 
 ### 返回示例
 
@@ -1677,7 +1677,7 @@
 
 * isAlbum=True(剧集)
 
-> http://43.241.224.161/api/video?isAlbum=false&videoId=25765735
+> http://116.62.150.164/newmovie/api/video?isAlbum=false&videoId=25765735
 
 ### 返回示例
 
@@ -1823,7 +1823,7 @@
 
 ### 请求示例
 
-> http://43.241.224.161/api/videos?keywords=海贼王
+> http://116.62.150.164/newmovie/api/videos?keywords=海贼王
 
 ### 返回JSON
 

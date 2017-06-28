@@ -31,6 +31,13 @@ const SortTitle = observer((props) => (
     </View>
 ))
 
+const CastItem = observer((props) => (
+    <View style={styles.castitem}>
+        <Image style={styles.castimg} source={{uri:props.item.avatars.medium}} />
+        <Text style={styles.castname}>{props.item.name}</Text>
+    </View>
+))
+
 @observer
 export default class MovieDetail extends Component {
 
@@ -39,10 +46,6 @@ export default class MovieDetail extends Component {
         UIManager.setLayoutAnimationEnabledExperimental && UIManager.setLayoutAnimationEnabledExperimental(true);
     }
 
-    movieId = '';
-
-    doubanId = '';
-
     scrollTop = new Animated.Value(0);
 
     @observable data = {};
@@ -50,40 +53,73 @@ export default class MovieDetail extends Component {
     @observable isRender = false;
 
     @computed get status() {
-        return this.data.status
+        return this.data.status;
+    }
+
+    @computed get updateDate() {
+        return this.data.updateDate;
+    }
+
+    @computed get score() {
+        return this.data.score;
+    }
+
+    @computed get img() {
+        return this.data.img||'...';
+    }
+
+    @computed get release() {
+        return this.data.release;
+    }
+
+    @computed get area() {
+        return this.data.area.split(' ');
+    }
+
+    @computed get type() {
+        return this.data.type.split(' ');
     }
 
     @observable Doubandata = {};
 
     @computed get summary() {
-        return this.Doubandata.summary||this.data.desc
+        return this.Doubandata.summary||this.data.desc;
     }
 
     @computed get name() {
-        return this.Doubandata.title
+        return this.Doubandata.title;
+    }
+
+    @computed get casts() {
+        return this.Doubandata.casts;
+    }
+
+    @computed get directors() {
+        return this.Doubandata.directors||[''];
     }
 
     @observable DoubanisRender = false;
 
     @action
-    getData = () => {
+    getData = (movieId) => {
         fetchData('video', {
             par: {
-                videoId: this.movieId
+                videoId: movieId
             }
         },
             (data) => {
                 this.data = data.body;
                 this.isRender = true;
                 LayoutAnimation.spring();
+                this.getDoubanData(data.body.doubanId);
             }
         )
     }
     @action
-    getDoubanData = () => {
+    getDoubanData = (doubanId) => {
         fetchData('douban_subject', {
             par: {
-                id: this.doubanId
+                id: doubanId
             }
         },
             (data) => {
@@ -94,11 +130,11 @@ export default class MovieDetail extends Component {
         )
     }
     componentDidMount() {
-        const { params: { item:{movieId,doubanId} } } = this.props.navigation.state;
-        this.movieId = movieId;
-        this.doubanId = doubanId;
-        this.getData();
-        this.getDoubanData();
+        const { params: { movieId } } = this.props.navigation.state;
+        //this.movieId = movieId;
+        //this.doubanId = doubanId;
+        this.getData(movieId);
+        //this.getDoubanData();
     }
     goBack = () => {
         const { navigation } = this.props;
@@ -108,8 +144,8 @@ export default class MovieDetail extends Component {
         this.scrollTop.setValue(e.nativeEvent.contentOffset.y);
     }
     render() {
-        const { navigation } = this.props;
-        const { params:{ item:{img,name}} } = navigation.state;
+        //const { navigation } = this.props;
+        //const { params:{ item:{img,name}} } = navigation.state;
         return (
             <View style={styles.content}>
                 <View style={styles.appbar}>
@@ -131,7 +167,7 @@ export default class MovieDetail extends Component {
                                 inputRange: [$.STATUS_HEIGHT + 40, $.STATUS_HEIGHT + 41],
                                 outputRange: [0, 1]
                             }) 
-                        }]} numberOfLines={1}>{this.name||name}</Animated.Text>
+                        }]} numberOfLines={1}>{this.name}</Animated.Text>
                     </View>
                     <Animated.View style={[styles.fullcon, { backgroundColor: _.Color }, { 
                         opacity: this.scrollTop.interpolate({
@@ -141,45 +177,47 @@ export default class MovieDetail extends Component {
                     }]} />
                 </View>
                 <ScrollView onScroll={this.onScroll} showsVerticalScrollIndicator={false} style={styles.content}>
-                    <Image resizeMode='cover' blurRadius={4} source={{ uri: img }} style={[styles.bg_place,{ backgroundColor: _.Color }]} />
+                    <Animated.Image 
+                        resizeMode='cover' 
+                        blurRadius={4} 
+                        source={{ uri: this.img }} 
+                        style={[styles.bg_place,{ backgroundColor: _.Color,transform:[{
+                            translateY:this.scrollTop.interpolate({
+                                inputRange: [$.STATUS_HEIGHT, $.STATUS_HEIGHT + 50],
+                                outputRange: [0, 15]
+                            }) 
+                        }] }]} />
                     <View style={{ height: $.STATUS_HEIGHT + 50 }} />
                     <View style={[styles.viewcon,styles.row]}>
-                        <View style={styles.poster}><Image source={{ uri: img }} style={[styles.fullcon,styles.borR]} /></View>
+                        <View style={styles.poster}><Image source={{ uri: this.img }} style={[styles.fullcon,styles.borR]} /></View>
                         <View style={styles.postertext}>
-                            <Text style={[styles.title,{color:_.Color}]}>{this.name||name}</Text>
-                            <Text style={styles.title}>{this.status}</Text>
-                            <TouchableOpacity>
-                                <Text>播放</Text>
+                            <Text style={[styles.title,{color:_.Color}]}>{this.name}</Text>
+                            <Text style={styles.subtitle}><Text style={styles.sptext}>状态/ </Text>{this.status}</Text>
+                            <Text style={styles.subtitle}><Text style={styles.sptext}>评分/ </Text>{this.score}</Text>
+                            <Text style={styles.subtitle}><Text style={styles.sptext}>上映/ </Text>{this.release}</Text>
+                            <Text style={styles.subtitle}><Text style={styles.sptext}>最近更新/ </Text>{this.updateDate}</Text>
+                            <TouchableOpacity activeOpacity={.7} style={[styles.playbtn,{backgroundColor:_.Color}]}>
+                                <Icon name='play-arrow' size={20} color='#fff' />
+                                <Text style={styles.playtext}>播放</Text>
                             </TouchableOpacity>
                         </View>
                     </View>
                     <View style={styles.viewcon}>
-                        <SortTitle title='简介' />
-                        <View style={styles.summary}>
-                            {
-                                this.DoubanisRender
-                                    ?
-                                    <Text style={styles.text}>{this.summary}</Text>
-                                    :
-                                    <Loading size='small' text='' />
-                            }
+                        <SortTitle title='导演' />
+                        <View style={styles.con}>
+                            <ScrollView>
+                                {
+                                    this.directors.map((el,i)=>(
+                                        <CastItem key={i} item={el} />
+                                    ))
+                                }
+                            </ScrollView>
+                            
                         </View>
                     </View>
                     <View style={styles.viewcon}>
                         <SortTitle title='简介' />
-                        <View style={styles.summary}>
-                            {
-                                this.DoubanisRender
-                                    ?
-                                    <Text style={styles.text}>{this.summary}</Text>
-                                    :
-                                    <Loading size='small' text='' />
-                            }
-                        </View>
-                    </View>
-                    <View style={styles.viewcon}>
-                        <SortTitle title='简介' />
-                        <View style={styles.summary}>
+                        <View style={styles.con}>
                             {
                                 this.DoubanisRender
                                     ?
@@ -240,7 +278,7 @@ const styles = StyleSheet.create({
         color: '#333',
         flex: 1
     },
-    summary: {
+    con: {
         paddingHorizontal: 15,
         paddingBottom: 10
     },
@@ -311,7 +349,30 @@ const styles = StyleSheet.create({
         marginLeft:5
     },
     title:{
-        fontSize:16,
-        color:'#333'
+        fontSize:18,
+        color:'#333',
+    },
+    subtitle:{
+        fontSize:14,
+        color:'#333',
+        paddingTop:3
+    },
+    sptext:{
+        fontStyle:'italic',
+        color:'#666'
+    },
+    playbtn:{
+        height:34,
+        paddingRight:15,
+        paddingLeft:10,
+        borderRadius:17,
+        marginTop:10,
+        flexDirection:'row',
+        alignSelf:'flex-start',
+        alignItems:'center'
+    },
+    playtext:{
+        fontSize:14,
+        color:'#fff'
     }
 })
