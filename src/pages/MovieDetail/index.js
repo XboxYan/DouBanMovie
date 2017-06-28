@@ -32,10 +32,16 @@ const SortTitle = observer((props) => (
 ))
 
 const CastItem = observer((props) => (
-    <View style={styles.castitem}>
-        <Image style={styles.castimg} source={{uri:props.item.avatars.medium}} />
-        <Text style={styles.castname}>{props.item.name}</Text>
-    </View>
+    <TouchableOpacity activeOpacity={.7} style={styles.castitem}>
+        <View style={[styles.castimg, { backgroundColor: '#f1f1f1' }]}><Image resizeMode='cover' style={styles.castimg} source={{ uri: props.item.avatars ? props.item.avatars.medium : '...' }} /></View>
+        <Text numberOfLines={2} style={[styles.castname, props.item.name && { marginTop: 10 }]}>{props.item.name}</Text>
+    </TouchableOpacity>
+))
+
+const TypeItem = observer((props) => (
+    <TouchableOpacity activeOpacity={.7} style={styles.typeitem}>
+        <Text style={styles.typename}>{props.item}</Text>
+    </TouchableOpacity>
 ))
 
 @observer
@@ -65,7 +71,7 @@ export default class MovieDetail extends Component {
     }
 
     @computed get img() {
-        return this.data.img||'...';
+        return this.isRender ? this.data.img : '...';
     }
 
     @computed get release() {
@@ -73,17 +79,17 @@ export default class MovieDetail extends Component {
     }
 
     @computed get area() {
-        return this.data.area.split(' ');
+        return this.data.area;
     }
 
     @computed get type() {
-        return this.data.type.split(' ');
+        return this.isRender ? this.data.type.replace(/(\s*$)/g, "").split(' ') : [''];
     }
 
     @observable Doubandata = {};
 
     @computed get summary() {
-        return this.Doubandata.summary||this.data.desc;
+        return this.Doubandata.summary || this.data.desc;
     }
 
     @computed get name() {
@@ -91,11 +97,11 @@ export default class MovieDetail extends Component {
     }
 
     @computed get casts() {
-        return this.Doubandata.casts;
+        return this.Doubandata.casts || [''];
     }
 
     @computed get directors() {
-        return this.Doubandata.directors||[''];
+        return this.Doubandata.directors || [''];
     }
 
     @observable DoubanisRender = false;
@@ -152,71 +158,91 @@ export default class MovieDetail extends Component {
                     <Touchable
                         style={styles.btn}
                         onPress={this.goBack}
-                    >
+                        >
                         <Icon name='keyboard-arrow-left' size={30} color='#fff' />
                     </Touchable>
                     <View style={styles.apptitle}>
-                        <Animated.Text style={[styles.apptitletext,{
+                        <Animated.Text style={[styles.apptitletext, {
                             opacity: this.scrollTop.interpolate({
-                                inputRange: [$.STATUS_HEIGHT + 40,$.STATUS_HEIGHT + 41],
+                                inputRange: [$.STATUS_HEIGHT + 40, $.STATUS_HEIGHT + 41],
                                 outputRange: [1, 0]
-                            }) 
+                            })
                         }]} numberOfLines={1}>影视详情</Animated.Text>
-                        <Animated.Text style={[styles.apptitletext,{
+                        <Animated.Text style={[styles.apptitletext, {
                             opacity: this.scrollTop.interpolate({
                                 inputRange: [$.STATUS_HEIGHT + 40, $.STATUS_HEIGHT + 41],
                                 outputRange: [0, 1]
-                            }) 
+                            })
                         }]} numberOfLines={1}>{this.name}</Animated.Text>
                     </View>
-                    <Animated.View style={[styles.fullcon, { backgroundColor: _.Color }, { 
+                    <Animated.View style={[styles.fullcon, { backgroundColor: _.Color }, {
                         opacity: this.scrollTop.interpolate({
                             inputRange: [0, $.STATUS_HEIGHT + 50],
                             outputRange: [0, 1]
-                        }) 
+                        })
                     }]} />
                 </View>
                 <ScrollView onScroll={this.onScroll} showsVerticalScrollIndicator={false} style={styles.content}>
-                    <Animated.Image 
-                        resizeMode='cover' 
-                        blurRadius={4} 
-                        source={{ uri: this.img }} 
-                        style={[styles.bg_place,{ backgroundColor: _.Color,transform:[{
-                            translateY:this.scrollTop.interpolate({
-                                inputRange: [$.STATUS_HEIGHT, $.STATUS_HEIGHT + 50],
-                                outputRange: [0, 15]
-                            }) 
-                        }] }]} />
+                    <Animated.Image
+                        resizeMode='cover'
+                        blurRadius={4}
+                        source={{ uri: this.img }}
+                        style={[styles.bg_place, {
+                            backgroundColor: _.Color, transform: [{
+                                translateY: this.scrollTop.interpolate({
+                                    inputRange: [$.STATUS_HEIGHT, $.STATUS_HEIGHT + 50],
+                                    outputRange: [0, 15]
+                                })
+                            }]
+                        }]} />
                     <View style={{ height: $.STATUS_HEIGHT + 50 }} />
-                    <View style={[styles.viewcon,styles.row]}>
-                        <View style={styles.poster}><Image source={{ uri: this.img }} style={[styles.fullcon,styles.borR]} /></View>
+                    <View style={[styles.viewcon, styles.row]}>
+                        <View style={styles.poster}><Image source={{ uri: this.img }} style={[styles.fullcon, styles.borR]} /></View>
                         <View style={styles.postertext}>
-                            <Text style={[styles.title,{color:_.Color}]}>{this.name}</Text>
+                            <Text style={[styles.title, { color: _.Color }]}>{this.name}</Text>
+                            <Text style={styles.subtitle}><Text style={styles.sptext}>地区/ </Text>{this.area}</Text>
                             <Text style={styles.subtitle}><Text style={styles.sptext}>状态/ </Text>{this.status}</Text>
                             <Text style={styles.subtitle}><Text style={styles.sptext}>评分/ </Text>{this.score}</Text>
                             <Text style={styles.subtitle}><Text style={styles.sptext}>上映/ </Text>{this.release}</Text>
                             <Text style={styles.subtitle}><Text style={styles.sptext}>最近更新/ </Text>{this.updateDate}</Text>
-                            <TouchableOpacity activeOpacity={.7} style={[styles.playbtn,{backgroundColor:_.Color}]}>
+                            <TouchableOpacity activeOpacity={.7} style={[styles.playbtn, { backgroundColor: _.Color }]}>
                                 <Icon name='play-arrow' size={20} color='#fff' />
                                 <Text style={styles.playtext}>播放</Text>
                             </TouchableOpacity>
                         </View>
                     </View>
                     <View style={styles.viewcon}>
-                        <SortTitle title='导演' />
+                        <SortTitle title='类型' />
                         <View style={styles.con}>
-                            <ScrollView>
-                                {
-                                    this.directors.map((el,i)=>(
-                                        <CastItem key={i} item={el} />
-                                    ))
-                                }
-                            </ScrollView>
-                            
+                            {
+                                this.type.map((el, i) => (
+                                    <TypeItem key={i} item={el} />
+                                ))
+                            }
                         </View>
                     </View>
                     <View style={styles.viewcon}>
-                        <SortTitle title='简介' />
+                        <SortTitle title='导演' />
+                        <View style={styles.con}>
+                            {
+                                this.directors.map((el, i) => (
+                                    <CastItem key={i} item={el} />
+                                ))
+                            }
+                        </View>
+                    </View>
+                    <View style={styles.viewcon}>
+                        <SortTitle title='主演' />
+                        <View style={styles.con}>
+                            {
+                                this.casts.map((el, i) => (
+                                    <CastItem key={i} item={el} />
+                                ))
+                            }
+                        </View>
+                    </View>
+                    <View style={styles.viewcon}>
+                        <SortTitle title='剧情介绍' />
                         <View style={styles.con}>
                             {
                                 this.DoubanisRender
@@ -262,8 +288,8 @@ const styles = StyleSheet.create({
         borderRadius: 3,
         marginHorizontal: 10,
     },
-    row:{
-        flexDirection:'row'
+    row: {
+        flexDirection: 'row'
     },
     view_hd: {
         height: 15,
@@ -280,7 +306,9 @@ const styles = StyleSheet.create({
     },
     con: {
         paddingHorizontal: 15,
-        paddingBottom: 10
+        paddingBottom: 5,
+        flexWrap: 'wrap',
+        flexDirection: 'row'
     },
     text: {
         fontSize: 14,
@@ -303,7 +331,7 @@ const styles = StyleSheet.create({
         paddingTop: $.STATUS_HEIGHT,
         flexDirection: 'row',
         alignItems: 'center',
-        zIndex:10
+        zIndex: 10
     },
     fullcon: {
         position: 'absolute',
@@ -313,7 +341,7 @@ const styles = StyleSheet.create({
         bottom: 0,
         zIndex: 0
     },
-    borR:{
+    borR: {
         borderRadius: 3,
     },
     btn: {
@@ -325,54 +353,83 @@ const styles = StyleSheet.create({
     },
     apptitle: {
         flex: 1,
-        marginRight:10,
+        marginRight: 10,
         justifyContent: 'center',
-        alignSelf:'stretch',
+        alignSelf: 'stretch',
         zIndex: 1
     },
-    apptitletext:{
+    apptitletext: {
         position: 'absolute',
         fontSize: 16,
         color: '#fff',
     },
-    poster:{
-        padding:10,
-        borderRadius:3,
-        backgroundColor:'#f1f1f1',
-        width:110,
-        height:160,
-        marginHorizontal:10
+    poster: {
+        padding: 10,
+        borderRadius: 3,
+        backgroundColor: '#f1f1f1',
+        width: 110,
+        height: 160,
+        marginHorizontal: 10
     },
-    postertext:{
-        flex:1,
-        marginRight:10,
-        marginLeft:5
+    postertext: {
+        flex: 1,
+        marginRight: 10,
+        marginLeft: 5
     },
-    title:{
-        fontSize:18,
-        color:'#333',
+    title: {
+        fontSize: 18,
+        color: '#333',
     },
-    subtitle:{
-        fontSize:14,
-        color:'#333',
-        paddingTop:3
+    subtitle: {
+        fontSize: 14,
+        color: '#333',
+        paddingTop: 3
     },
-    sptext:{
-        fontStyle:'italic',
-        color:'#666'
+    sptext: {
+        fontStyle: 'italic',
+        color: '#666'
     },
-    playbtn:{
-        height:34,
-        paddingRight:15,
-        paddingLeft:10,
-        borderRadius:17,
-        marginTop:10,
-        flexDirection:'row',
-        alignSelf:'flex-start',
-        alignItems:'center'
+    playbtn: {
+        height: 34,
+        paddingRight: 15,
+        paddingLeft: 10,
+        borderRadius: 17,
+        marginTop: 10,
+        flexDirection: 'row',
+        alignSelf: 'flex-start',
+        alignItems: 'center'
     },
-    playtext:{
-        fontSize:14,
-        color:'#fff'
+    playtext: {
+        fontSize: 14,
+        color: '#fff'
+    },
+    castitem: {
+        alignItems: 'center',
+        marginRight: 10,
+        width: 60
+    },
+    castimg: {
+        width: 50,
+        height: 50,
+        borderRadius: 25,
+        overflow: 'hidden'
+    },
+    castname: {
+        fontSize: 14,
+        color: '#666',
+    },
+    typeitem: {
+        backgroundColor: '#f1f1f1',
+        height: 30,
+        paddingHorizontal: 15,
+        borderRadius: 15,
+        justifyContent: 'center',
+        marginVertical: 5,
+        marginRight: 10
+    },
+    typename: {
+        fontSize: 14,
+        minWidth: 20,
+        color: '#666'
     }
 })
