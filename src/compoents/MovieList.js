@@ -24,7 +24,7 @@ const MovieEmpty = () => (
 const MovieItem = (props) => (
 	<TouchableOpacity
 		activeOpacity={.8}
-		onPress={() => props.navigation.navigate('MovieDetail',{movieId:props.item.movieId})}
+		onPress={() => props.navigation.navigate('MovieDetail',{item:props.item})}
 		style={styles.movieitem}>
 		<Image 
 			style={styles.movieimg}

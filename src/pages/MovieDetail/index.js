@@ -55,6 +55,10 @@ export default class MovieDetail extends Component {
 
     scrollTop = new Animated.Value(0);
 
+    movieId = '';
+
+    doubanId = '';
+
     @observable data = {};
 
     @observable isRender = false;
@@ -108,10 +112,10 @@ export default class MovieDetail extends Component {
     @observable DoubanisRender = false;
 
     @action
-    getData = (movieId) => {
+    getData = () => {
         fetchData('video', {
             par: {
-                videoId: movieId
+                videoId: this.movieId
             }
         },
             (data) => {
@@ -123,10 +127,10 @@ export default class MovieDetail extends Component {
         )
     }
     @action
-    getDoubanData = (doubanId) => {
+    getDoubanData = () => {
         fetchData('douban_subject', {
             par: {
-                id: doubanId
+                id: this.doubanId
             }
         },
             (data) => {
@@ -137,11 +141,11 @@ export default class MovieDetail extends Component {
         )
     }
     componentDidMount() {
-        const { params: { movieId } } = this.props.navigation.state;
-        //this.movieId = movieId;
-        //this.doubanId = doubanId;
-        this.getData(movieId);
-        //this.getDoubanData();
+        const { params:{ item:{movieId,doubanId}} } = this.props.navigation.state;
+        this.movieId = movieId;
+        this.doubanId = doubanId;
+        this.getData();
+        this.getDoubanData();
     }
     goBack = () => {
         const { navigation } = this.props;
@@ -152,7 +156,7 @@ export default class MovieDetail extends Component {
     }
     render() {
         //const { navigation } = this.props;
-        //const { params:{ item:{img,name}} } = navigation.state;
+        const { params:{ item:{name}} } = this.props.navigation.state;
         return (
             <View style={styles.content}>
                 <View style={styles.appbar}>
@@ -178,7 +182,7 @@ export default class MovieDetail extends Component {
                     </View>
                     <Animated.View style={[styles.fullcon, { backgroundColor: _.Color }, {
                         opacity: this.scrollTop.interpolate({
-                            inputRange: [0, $.STATUS_HEIGHT + 50],
+                            inputRange: [$.STATUS_HEIGHT, $.STATUS_HEIGHT + 50],
                             outputRange: [0, 1]
                         })
                     }]} />
@@ -200,7 +204,7 @@ export default class MovieDetail extends Component {
                     <View style={[styles.viewcon, styles.row]}>
                         <View style={styles.poster}><Image source={{ uri: this.img }} style={[styles.fullcon, styles.borR]} /></View>
                         <View style={styles.postertext}>
-                            <Text style={[styles.title, { color: _.Color }]}>{this.name}</Text>
+                            <Text style={[styles.title, { color: _.Color }]}>{this.name||name}</Text>
                             <Star style={styles.score} score={this.score||0.0} />
                             <Text style={styles.subtitle}><Text style={styles.sptext}>地区/ </Text>{this.area}</Text>
                             <Text style={styles.subtitle}><Text style={styles.sptext}>状态/ </Text>{this.status}</Text>
