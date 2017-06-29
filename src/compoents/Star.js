@@ -60,7 +60,7 @@ export default class Star extends PureComponent {
 			<View style={[styles.starcon,style]}>
                 <StarBase sign={sign} />
 				<StarCurrent score={score} sign={sign} />
-				<Text style={[styles.score,{color:_.Color}]}>{score}</Text>
+				<Text style={[styles.score,{color:_.Color}]}>{score||'0.0'}</Text>
 			</View>
 		)
 	}

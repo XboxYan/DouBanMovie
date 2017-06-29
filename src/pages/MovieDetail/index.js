@@ -35,7 +35,7 @@ const SortTitle = observer((props) => (
 const CastItem = observer((props) => (
     <TouchableOpacity activeOpacity={.7} style={styles.castitem}>
         <View style={[styles.castimg, { backgroundColor: '#f1f1f1' }]}><Image resizeMode='cover' style={styles.castimg} source={{ uri: props.item.avatars ? props.item.avatars.medium : '...' }} /></View>
-        <Text numberOfLines={2} style={[styles.castname, props.item.name && { marginTop: 10 }]}>{props.item.name}</Text>
+        <Text numberOfLines={2} style={[styles.castname,props.director&&{color:_.Color,fontStyle:'italic'}, props.item.name && { marginTop: 10 }]}>{props.item.name}</Text>
     </TouchableOpacity>
 ))
 
@@ -102,7 +102,7 @@ export default class MovieDetail extends Component {
     }
 
     @computed get casts() {
-        return this.Doubandata.casts || [''];
+        return this.Doubandata.casts;
     }
 
     @computed get directors() {
@@ -205,12 +205,10 @@ export default class MovieDetail extends Component {
                         <View style={styles.poster}><Image source={{ uri: this.img }} style={[styles.fullcon, styles.borR]} /></View>
                         <View style={styles.postertext}>
                             <Text style={[styles.title, { color: _.Color }]}>{this.name||name}</Text>
-                            <Star style={styles.score} score={this.score||0.0} />
-                            <Text style={styles.subtitle}><Text style={styles.sptext}>地区/ </Text>{this.area}</Text>
-                            <Text style={styles.subtitle}><Text style={styles.sptext}>状态/ </Text>{this.status}</Text>
-                            <Text style={styles.subtitle}><Text style={styles.sptext}>评分/ </Text>{this.score}</Text>
-                            <Text style={styles.subtitle}><Text style={styles.sptext}>上映/ </Text>{this.release}</Text>
-                            <Text style={styles.subtitle}><Text style={styles.sptext}>最近更新/ </Text>{this.updateDate}</Text>
+                            <Star style={styles.score} score={this.score} />
+                            <Text style={styles.status}>{this.status||' '}</Text>
+                            <Text style={styles.subtitle}>{this.area} / {this.release}</Text>
+                            <Text style={styles.subtitle}>{this.updateDate} 更新</Text>
                             <TouchableOpacity activeOpacity={.7} style={[styles.playbtn, { backgroundColor: _.Color }]}>
                                 <Icon name='play-arrow' size={20} color='#fff' />
                                 <Text style={styles.playtext}>播放</Text>
@@ -228,24 +226,19 @@ export default class MovieDetail extends Component {
                         </View>
                     </View>
                     <View style={styles.viewcon}>
-                        <SortTitle title='导演' />
-                        <View style={styles.con}>
+                        <SortTitle title='导演/主演' />
+                        <ScrollView showsHorizontalScrollIndicator={false} horizontal={true} contentContainerStyle={styles.con}>
                             {
                                 this.directors.map((el, i) => (
-                                    <CastItem key={i} item={el} />
+                                    <CastItem director={true} key={i} item={el} />
                                 ))
                             }
-                        </View>
-                    </View>
-                    <View style={styles.viewcon}>
-                        <SortTitle title='主演' />
-                        <View style={styles.con}>
                             {
-                                this.casts.map((el, i) => (
+                                this.isRender&&this.casts.map((el, i) => (
                                     <CastItem key={i} item={el} />
                                 ))
                             }
-                        </View>
+                        </ScrollView>
                     </View>
                     <View style={styles.viewcon}>
                         <SortTitle title='剧情介绍' />
@@ -440,5 +433,15 @@ const styles = StyleSheet.create({
     },
     star:{
         marginVertical:5
+    },
+    status:{
+        fontSize:10,
+        paddingHorizontal:5,
+        marginVertical:5,
+        paddingVertical:1,
+        borderRadius:1,
+        alignSelf:'flex-start',
+        color:'#fff',
+        backgroundColor:'rgba(0,0,0,.4)'
     }
 })
