@@ -21,6 +21,7 @@ import { observer } from 'mobx-react/native';
 import _ from '../../theme';
 import fetchData from '../../util/Fetch';
 import Loading from '../../compoents/Loading';
+import Star from '../../compoents/Star';
 import Video from 'react-native-video';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import Touchable from '../../compoents/Touchable';
@@ -200,6 +201,7 @@ export default class MovieDetail extends Component {
                         <View style={styles.poster}><Image source={{ uri: this.img }} style={[styles.fullcon, styles.borR]} /></View>
                         <View style={styles.postertext}>
                             <Text style={[styles.title, { color: _.Color }]}>{this.name}</Text>
+                            <Star style={styles.score} score={this.score||0.0} />
                             <Text style={styles.subtitle}><Text style={styles.sptext}>地区/ </Text>{this.area}</Text>
                             <Text style={styles.subtitle}><Text style={styles.sptext}>状态/ </Text>{this.status}</Text>
                             <Text style={styles.subtitle}><Text style={styles.sptext}>评分/ </Text>{this.score}</Text>
@@ -374,7 +376,7 @@ const styles = StyleSheet.create({
     postertext: {
         flex: 1,
         marginRight: 10,
-        marginLeft: 5
+        marginLeft: 5,
     },
     title: {
         fontSize: 18,
@@ -431,5 +433,8 @@ const styles = StyleSheet.create({
         fontSize: 14,
         minWidth: 20,
         color: '#666'
+    },
+    star:{
+        marginVertical:5
     }
 })
