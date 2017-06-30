@@ -34,7 +34,12 @@ const SortTitle = observer((props) => (
 
 const CastItem = observer((props) => (
     <TouchableOpacity activeOpacity={.7} style={styles.castitem}>
-        <View style={[styles.castimg, { backgroundColor: '#f1f1f1' }]}><Image resizeMode='cover' style={styles.castimg} source={{ uri: props.item.avatars ? props.item.avatars.medium : '...' }} /></View>
+        <View style={styles.castimgwrap}>
+            {
+                !props.item.avatars&&<Text style={styles.casttitle}>{props.item.name&&props.item.name[0]}</Text>
+            }
+            <Image resizeMode='cover' style={styles.castimg} source={{ uri: props.item.avatars ? props.item.avatars.medium : '...' }} />
+        </View>
         <Text numberOfLines={2} style={[styles.castname,props.director&&{color:_.Color,fontStyle:'italic'}, props.item.name && { marginTop: 10 }]}>{props.item.name}</Text>
     </TouchableOpacity>
 ))
@@ -71,10 +76,6 @@ export default class MovieDetail extends Component {
         return this.data.updateDate;
     }
 
-    @computed get score() {
-        return this.data.score;
-    }
-
     @computed get img() {
         return this.isRender ? this.data.img : '...';
     }
@@ -89,9 +90,15 @@ export default class MovieDetail extends Component {
 
     @computed get type() {
         return this.isRender ? this.data.type.replace(/(\s*$)/g, "").split(' ') : [''];
+        //return this.Doubandata.genres || [''];
     }
 
     @observable Doubandata = {};
+
+    @computed get score() {
+        return this.data.score;
+        //return this.DoubanisRender?this.Doubandata.rating.average:0;
+    }
 
     @computed get summary() {
         return this.Doubandata.summary || this.data.desc;
@@ -122,7 +129,6 @@ export default class MovieDetail extends Component {
                 this.data = data.body;
                 this.isRender = true;
                 LayoutAnimation.spring();
-                this.getDoubanData(data.body.doubanId);
             }
         )
     }
@@ -206,7 +212,9 @@ export default class MovieDetail extends Component {
                         <View style={styles.postertext}>
                             <Text style={[styles.title, { color: _.Color }]}>{this.name||name}</Text>
                             <Star style={styles.score} score={this.score} />
-                            <Text style={styles.status}>{this.status||' '}</Text>
+                            {
+                                this.isRender&&<Text style={styles.status}>{this.status}</Text>
+                            }
                             <Text style={styles.subtitle}>{this.area} / {this.release}</Text>
                             <Text style={styles.subtitle}>{this.updateDate} 更新</Text>
                             <TouchableOpacity activeOpacity={.7} style={[styles.playbtn, { backgroundColor: _.Color }]}>
@@ -226,7 +234,7 @@ export default class MovieDetail extends Component {
                         </View>
                     </View>
                     <View style={styles.viewcon}>
-                        <SortTitle title='导演/主演' />
+                        <SortTitle title='导演 / 主演' />
                         <ScrollView showsHorizontalScrollIndicator={false} horizontal={true} contentContainerStyle={styles.con}>
                             {
                                 this.directors.map((el, i) => (
@@ -234,7 +242,7 @@ export default class MovieDetail extends Component {
                                 ))
                             }
                             {
-                                this.isRender&&this.casts.map((el, i) => (
+                                this.DoubanisRender&&this.casts.map((el, i) => (
                                     <CastItem key={i} item={el} />
                                 ))
                             }
@@ -405,13 +413,28 @@ const styles = StyleSheet.create({
     castitem: {
         alignItems: 'center',
         marginRight: 10,
-        width: 60
+        width: 60,
+
+    },
+    castimgwrap:{
+        width: 50,
+        height: 50,
+        borderRadius: 25,
+        justifyContent: 'center',
+        alignItems:'center',
+        backgroundColor:'#f1f1f1',
+        overflow: 'hidden'
     },
     castimg: {
         width: 50,
         height: 50,
         borderRadius: 25,
-        overflow: 'hidden'
+        position:'absolute'
+    },
+    casttitle:{
+        position:'absolute',
+        fontSize:30,
+        color:'#999'
     },
     castname: {
         fontSize: 14,
