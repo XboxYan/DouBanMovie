@@ -23,7 +23,7 @@ export default class extends PureComponent {
                     :
                     <View style={styles.loadmore}>
                         <ActivityIndicator size='small' color={_.Color} />
-                        <Text style={styles.loadtext}>正在加载影片...</Text>
+                        <Text style={styles.loadtext}>正在加载...</Text>
                     </View>
                 }
             </View>

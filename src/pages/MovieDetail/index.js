@@ -25,6 +25,7 @@ import Star from '../../compoents/Star';
 import Video from 'react-native-video';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import Touchable from '../../compoents/Touchable';
+import CommentList from '../../compoents/CommentList';
 
 const SortTitle = observer((props) => (
     <View style={[styles.view_hd, { borderColor: _.Color }]}>
@@ -118,6 +119,10 @@ export default class MovieDetail extends Component {
 
     @observable DoubanisRender = false;
 
+    @observable Commentdata = {};
+
+    @observable CommentisRender = false;
+
     @action
     getData = () => {
         fetchData('video', {
@@ -146,12 +151,31 @@ export default class MovieDetail extends Component {
             }
         )
     }
+    @action
+    getComments = () => {
+        fetchData('get_comments', {
+            headers:{
+                'User-Agent':'api-client/1 com.douban.frodo/4.9.0(88) Android/25 cm_victara motorola XT1085  rom:android'
+            },
+            par: {
+                id: this.doubanId
+            }
+        },
+            (data) => {
+                console.log(data)
+                this.Commentdata = data.interests;
+                this.CommentisRender = true;
+                LayoutAnimation.spring();
+            }
+        )
+    }
     componentDidMount() {
         const { params:{ item:{movieId,doubanId}} } = this.props.navigation.state;
         this.movieId = movieId;
         this.doubanId = doubanId;
         this.getData();
         this.getDoubanData();
+        this.getComments();
     }
     goBack = () => {
         const { navigation } = this.props;
@@ -258,6 +282,12 @@ export default class MovieDetail extends Component {
                                     :
                                     <Loading size='small' text='' />
                             }
+                        </View>
+                    </View>
+                    <View style={styles.viewcon}>
+                        <SortTitle title='热评' />
+                        <View style={styles.con}>
+                            <CommentList isRender={this.CommentisRender} data={this.Commentdata}/>
                         </View>
                     </View>
                 </ScrollView>

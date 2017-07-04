@@ -1,5 +1,5 @@
 global.Base = 'http://116.62.150.164/newmovie/api/';
-global.appVersion = '5.2.0';
+global.appVersion = '5.3.1';
 
 const API = {
     //首页
@@ -21,7 +21,9 @@ const API = {
     //获取影片详情（豆瓣）
     douban_subject:({id=''}) => `https://api.douban.com/v2/movie/subject/${id}`,
     //搜索
-    search:({keywords=''}) => `${Base}videos?keywords=${keywords}`
+    search:({keywords=''}) => `${Base}videos?keywords=${keywords}`,
+    //评论
+    get_comments:({id='',start=0,count=10}) => `https://frodo.douban.com/api/v2/movie/${id}/interests?start=${start}&count=${count}`
     
 }
 
