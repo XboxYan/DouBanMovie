@@ -4,7 +4,7 @@ Home
 *
 */
 
-import React, { Component } from 'react';
+import React, { PureComponent } from 'react';
 import {
     Text,
     StyleSheet,
@@ -42,7 +42,7 @@ const MovieTitle = observer((props) => (
 ))
 
 @observer
-export default class Home extends Component {
+export default class Home extends PureComponent {
     static navigationOptions = {
         tabBarIcon: ({ focused, tintColor }) => <TabItem label='推荐' icon='fire' active={focused} />,
     }
@@ -137,6 +137,7 @@ const styles = StyleSheet.create({
     },
     view_more: {
         flexDirection: 'row',
+        alignSelf:'stretch',
         alignItems: 'center',
     },
     view_moretext: {

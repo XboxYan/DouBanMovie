@@ -32,7 +32,7 @@ const CommentItem = (props) => (
 			<Text style={styles.commentname}>{props.item.user.name}</Text>
 			<Text style={styles.commenttime}>{props.item.create_time}</Text>
 			<Text style={styles.commentpage}>{props.item.comment}</Text>
-			<Star style={styles.star} score={props.item.rating.value*2} isShowNum={false}/>
+			<Star style={styles.star} score={props.item.rating?props.item.rating.value*2:0} isShowNum={false}/>
 		</View>
 	</View>
 )
@@ -65,19 +65,19 @@ export default class extends PureComponent {
 		}
 	}
 	render() {
-		const { data, isRender,onEndReached=()=>{} } = this.props;
+		const { data,style, isRender,onEndReached=()=>{} } = this.props;
 		if (!isRender) {
 			return <Loading size='small' text='' />
 		}
 		return (
 			<FlatList
-				style={styles.content}
+				style={[styles.content,style]}
 				numColumns={1}
 				ListFooterComponent={this.renderFooter}
 				data={[...data]}
 				onEndReached={onEndReached}
 				onEndReachedThreshold={0.1}
-				keyExtractor={(item, index) => item.id}
+				keyExtractor={(item, index) => index+item.id}
 				renderItem={this.renderItem}
 			/>
 		)
@@ -90,7 +90,7 @@ const styles = StyleSheet.create({
 	},
 	commentitem: {
 		marginTop:10,
-		marginBottom:5,
+		paddingBottom:5,
 		flexDirection:'row'
 	},
 	commentimg: {

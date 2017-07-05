@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { PureComponent } from 'react';
 import {
 	StyleSheet,
 	Text,
@@ -9,7 +9,7 @@ import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import _ from '../theme';
 
 @observer
-export default class TabItem extends Component {
+export default class TabItem extends PureComponent {
 	render() {
 		const { icon, active, label } = this.props;
 		const Color = active?_.Color:'#777';

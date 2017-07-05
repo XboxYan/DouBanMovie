@@ -4,7 +4,7 @@ MovieDetail
 *
 */
 
-import React, { Component } from 'react';
+import React, { PureComponent } from 'react';
 import {
     Text,
     StyleSheet,
@@ -30,6 +30,9 @@ import CommentList from '../../compoents/CommentList';
 const SortTitle = observer((props) => (
     <View style={[styles.view_hd, { borderColor: _.Color }]}>
         <Text style={styles.view_title}>{props.title}</Text>
+        {
+            props.children||null
+        }
     </View>
 ))
 
@@ -37,11 +40,14 @@ const CastItem = observer((props) => (
     <TouchableOpacity activeOpacity={.7} style={styles.castitem}>
         <View style={styles.castimgwrap}>
             {
-                !props.item.avatars&&<Text style={styles.casttitle}>{props.item.name&&props.item.name[0]}</Text>
+                !props.item.avatars && <Text style={styles.casttitle}>{props.item.name && props.item.name[0]}</Text>
             }
             <Image resizeMode='cover' style={styles.castimg} source={{ uri: props.item.avatars ? props.item.avatars.medium : '...' }} />
         </View>
-        <Text numberOfLines={2} style={[styles.castname,props.director&&{color:_.Color,fontStyle:'italic'}, props.item.name && { marginTop: 10 }]}>{props.item.name}</Text>
+        <Text numberOfLines={2} style={[styles.castname, props.director && { color: _.Color, fontStyle: 'italic' }, props.item.name && { marginTop: 10 }]}>{props.item.name}</Text>
+        {
+            props.director && <Text style={[styles.director, { backgroundColor: _.Color }]}>导</Text>
+        }
     </TouchableOpacity>
 ))
 
@@ -52,7 +58,7 @@ const TypeItem = observer((props) => (
 ))
 
 @observer
-export default class MovieDetail extends Component {
+export default class MovieDetail extends PureComponent {
 
     constructor(props) {
         super(props);
@@ -66,6 +72,8 @@ export default class MovieDetail extends Component {
     doubanId = '';
 
     @observable data = {};
+
+    @observable isMore = false;
 
     @observable isRender = false;
 
@@ -121,6 +129,14 @@ export default class MovieDetail extends Component {
 
     @observable Commentdata = {};
 
+    @computed get CommentList() {
+        return this.Commentdata.interests;
+    }
+
+    @computed get CommentTotal() {
+        return this.Commentdata.total || 0;
+    }
+
     @observable CommentisRender = false;
 
     @action
@@ -154,23 +170,22 @@ export default class MovieDetail extends Component {
     @action
     getComments = () => {
         fetchData('get_comments', {
-            headers:{
-                'User-Agent':'api-client/1 com.douban.frodo/4.9.0(88) Android/25 cm_victara motorola XT1085  rom:android'
+            headers: {
+                'User-Agent': 'api-client/1 com.douban.frodo/4.9.0(88) Android/25 cm_victara motorola XT1085  rom:android'
             },
             par: {
                 id: this.doubanId
             }
         },
             (data) => {
-                console.log(data)
-                this.Commentdata = data.interests;
+                this.Commentdata = data;
                 this.CommentisRender = true;
                 LayoutAnimation.spring();
             }
         )
     }
     componentDidMount() {
-        const { params:{ item:{movieId,doubanId}} } = this.props.navigation.state;
+        const { params: { item: { movieId, doubanId } } } = this.props.navigation.state;
         this.movieId = movieId;
         this.doubanId = doubanId;
         this.getData();
@@ -184,16 +199,20 @@ export default class MovieDetail extends Component {
     onScroll = (e) => {
         this.scrollTop.setValue(e.nativeEvent.contentOffset.y);
     }
+    expand = () => {
+        LayoutAnimation.spring();
+        this.isMore = !this.isMore;
+    }
     render() {
-        //const { navigation } = this.props;
-        const { params:{ item:{name}} } = this.props.navigation.state;
+        const { navigation } = this.props;
+        const { params: { item: { name } } } = navigation.state;
         return (
             <View style={styles.content}>
                 <View style={styles.appbar}>
                     <Touchable
                         style={styles.btn}
                         onPress={this.goBack}
-                        >
+                    >
                         <Icon name='keyboard-arrow-left' size={30} color='#fff' />
                     </Touchable>
                     <View style={styles.apptitle}>
@@ -208,7 +227,7 @@ export default class MovieDetail extends Component {
                                 inputRange: [$.STATUS_HEIGHT + 40, $.STATUS_HEIGHT + 41],
                                 outputRange: [0, 1]
                             })
-                        }]} numberOfLines={1}>{this.name}</Animated.Text>
+                        }]} numberOfLines={1}>{this.name || name}</Animated.Text>
                     </View>
                     <Animated.View style={[styles.fullcon, { backgroundColor: _.Color }, {
                         opacity: this.scrollTop.interpolate({
@@ -217,7 +236,7 @@ export default class MovieDetail extends Component {
                         })
                     }]} />
                 </View>
-                <ScrollView onScroll={this.onScroll} showsVerticalScrollIndicator={false} style={styles.content}>
+                <ScrollView stickyHeaderIndices={[]} onScroll={this.onScroll} showsVerticalScrollIndicator={false} style={styles.content}>
                     <Animated.Image
                         resizeMode='cover'
                         blurRadius={4}
@@ -230,14 +249,13 @@ export default class MovieDetail extends Component {
                                 })
                             }]
                         }]} />
-                    <View style={{ height: $.STATUS_HEIGHT + 50 }} />
-                    <View style={[styles.viewcon, styles.row]}>
+                    <View style={[styles.viewcon, styles.row, { marginTop: $.STATUS_HEIGHT + 50 }]}>
                         <View style={styles.poster}><Image source={{ uri: this.img }} style={[styles.fullcon, styles.borR]} /></View>
                         <View style={styles.postertext}>
-                            <Text style={[styles.title, { color: _.Color }]}>{this.name||name}</Text>
+                            <Text style={[styles.title, { color: _.Color }]}>{this.name || name}</Text>
                             <Star style={styles.score} score={this.score} />
                             {
-                                this.isRender&&<Text style={styles.status}>{this.status}</Text>
+                                this.isRender && <Text style={styles.status}>{this.status}</Text>
                             }
                             <Text style={styles.subtitle}>{this.area} / {this.release}</Text>
                             <Text style={styles.subtitle}>{this.updateDate} 更新</Text>
@@ -266,29 +284,48 @@ export default class MovieDetail extends Component {
                                 ))
                             }
                             {
-                                this.DoubanisRender&&this.casts.map((el, i) => (
+                                this.DoubanisRender && this.casts.map((el, i) => (
                                     <CastItem key={i} item={el} />
                                 ))
                             }
                         </ScrollView>
                     </View>
                     <View style={styles.viewcon}>
-                        <SortTitle title='剧情介绍' />
+                        <SortTitle title='剧情介绍'>
+                        {
+                            this.DoubanisRender &&
+                            <TouchableOpacity
+                                onPress={this.expand}
+                                style={styles.view_more}
+                            >
+                                <Text style={styles.view_moretext}>{this.isMore?'收起':'展开'}</Text>
+                                <Icon name={this.isMore?'expand-less':'expand-more'} size={20} color={_.Color} />
+                            </TouchableOpacity>
+                        }
+                        </SortTitle>
                         <View style={styles.con}>
                             {
                                 this.DoubanisRender
                                     ?
-                                    <Text style={styles.text}>{this.summary}</Text>
+                                    <Text numberOfLines={this.isMore?0:5} style={styles.text}>{this.summary}</Text>
                                     :
                                     <Loading size='small' text='' />
                             }
                         </View>
                     </View>
                     <View style={styles.viewcon}>
-                        <SortTitle title='热评' />
+                        <SortTitle title={`热评(${this.CommentTotal})`} />
                         <View style={styles.con}>
-                            <CommentList isRender={this.CommentisRender} data={this.Commentdata}/>
+                            <CommentList isRender={this.CommentisRender} data={this.CommentList} />
                         </View>
+                        {
+                            this.CommentisRender &&
+                            <Touchable
+                                onPress={() => navigation.navigate('Comment', { id: this.doubanId, total: this.CommentTotal })}
+                                style={styles.commentbtn}>
+                                <Text style={{ fontSize: 16, color: _.Color }}>查看更多评论</Text>
+                            </Touchable>
+                        }
                     </View>
                 </ScrollView>
             </View>
@@ -446,25 +483,25 @@ const styles = StyleSheet.create({
         width: 60,
 
     },
-    castimgwrap:{
+    castimgwrap: {
         width: 50,
         height: 50,
         borderRadius: 25,
         justifyContent: 'center',
-        alignItems:'center',
-        backgroundColor:'#f1f1f1',
+        alignItems: 'center',
+        backgroundColor: '#f1f1f1',
         overflow: 'hidden'
     },
     castimg: {
         width: 50,
         height: 50,
         borderRadius: 25,
-        position:'absolute'
+        position: 'absolute'
     },
-    casttitle:{
-        position:'absolute',
-        fontSize:30,
-        color:'#999'
+    casttitle: {
+        position: 'absolute',
+        fontSize: 30,
+        color: '#999'
     },
     castname: {
         fontSize: 14,
@@ -484,17 +521,43 @@ const styles = StyleSheet.create({
         minWidth: 20,
         color: '#666'
     },
-    star:{
-        marginVertical:5
+    star: {
+        marginVertical: 5
     },
-    status:{
-        fontSize:10,
-        paddingHorizontal:5,
-        marginVertical:5,
-        paddingVertical:1,
-        borderRadius:1,
-        alignSelf:'flex-start',
-        color:'#fff',
-        backgroundColor:'rgba(0,0,0,.4)'
-    }
+    status: {
+        fontSize: 10,
+        paddingHorizontal: 5,
+        marginVertical: 5,
+        paddingVertical: 1,
+        borderRadius: 1,
+        alignSelf: 'flex-start',
+        color: '#fff',
+        backgroundColor: 'rgba(0,0,0,.4)'
+    },
+    director: {
+        position: 'absolute',
+        right: 0,
+        top: 0,
+        fontSize: 10,
+        paddingHorizontal: 5,
+        paddingVertical: 2,
+        fontWeight: 'bold',
+        borderRadius: 8,
+        color: '#fff'
+    },
+    commentbtn: {
+        marginHorizontal: 10,
+        height: 40,
+        justifyContent: 'center',
+        alignItems: 'center'
+    },
+    view_more: {
+        flexDirection: 'row',
+        alignSelf:'stretch',
+        alignItems: 'center',
+    },
+    view_moretext: {
+        fontSize: 13,
+        color: '#999'
+    },
 })

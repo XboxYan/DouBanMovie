@@ -8,6 +8,7 @@ import Live from './pages/Live';
 import Me from './pages/Me';
 import HomeMore from './pages/Home/HomeMore';
 import MovieDetail from './pages/MovieDetail';
+import Comment from './pages/MovieDetail/Comment';
 
 //TabNavigatorConfig
 const TabNavigatorConfig = {
@@ -52,7 +53,8 @@ const MainApp = StackNavigator({
     MovieDetail:{ 
         screen: MovieDetail,
         path:'movie/:movieid'
-    }
+    },
+    Comment:{screen:Comment}
 },StackNavigatorConfig);
 
 const prefix = Platform.OS == 'android' ? 'doubanmovie://doubanmovie/' : 'doubanmovie://';

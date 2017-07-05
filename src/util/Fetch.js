@@ -23,11 +23,11 @@ const API = {
     //搜索
     search:({keywords=''}) => `${Base}videos?keywords=${keywords}`,
     //评论
-    get_comments:({id='',start=0,count=10}) => `https://frodo.douban.com/api/v2/movie/${id}/interests?start=${start}&count=${count}`
+    get_comments:({id='',start=0,count=5}) => `https://frodo.douban.com/api/v2/movie/${id}/interests?start=${start}&count=${count}&order_by=hot`
     
 }
 
-const fetchData = (url,{headers={'appVersion': appVersion},par = {} } = {},success) => {
+const fetchData = (url,{headers={'appVersion': appVersion},par = {} } = {},success,error=(err)=>{console.warn(err)}) => {
     const URL = API[url](par);
     fetch(URL, {
         method: 'GET',
@@ -42,7 +42,7 @@ const fetchData = (url,{headers={'appVersion': appVersion},par = {} } = {},succe
         success(data);
     })
     .catch((err) => {
-        console.warn(err);
+        error(err)
     })
 }
 

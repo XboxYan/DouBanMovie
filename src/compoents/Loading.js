@@ -2,7 +2,7 @@
  * Loading
  */
 
-import React, { Component } from 'react';
+import React, { PureComponent } from 'react';
 import {
   ActivityIndicator,
   StyleSheet,
@@ -14,7 +14,7 @@ import _ from '../theme';
 import { observer } from 'mobx-react/native';
 
 @observer
-export default class Loading extends Component {
+export default class Loading extends PureComponent {
   render(){
       const {height,size,color=_.Color,text='正在加载...',textColor='#666'} = this.props;
       return(

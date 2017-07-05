@@ -1,7 +1,7 @@
 /**
  * AppTop
  */
-import React, { Component } from 'react';
+import React, { PureComponent } from 'react';
 import {
 	StyleSheet,
 	Text,
@@ -13,7 +13,7 @@ import _ from '../theme';
 import Touchable from './Touchable';
 
 @observer
-export default class AppTop extends Component {
+export default class AppTop extends PureComponent {
 
 	componentDidMount(){
 		setTimeout(()=>{

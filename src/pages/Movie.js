@@ -4,7 +4,7 @@ Movie
 *
 */
 
-import React, { Component } from 'react';
+import React, { PureComponent } from 'react';
 import {
     Text,
     StyleSheet,
@@ -53,7 +53,7 @@ const Tab = observer(TabNavigator({
 },TabNavigatorConfig));
 
 @observer
-export default class Movie extends Component {
+export default class Movie extends PureComponent {
     static navigationOptions = {
         tabBarIcon: ({ focused, tintColor }) => <TabItem label='影视' icon='album' active={focused} />,
     }
