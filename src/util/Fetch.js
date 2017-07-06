@@ -1,4 +1,4 @@
-global.Base = 'http://116.62.150.164/newmovie/api/';
+global.Base = 'http://120.55.16.187/newmovie/api/';
 global.appVersion = '5.3.1';
 
 const API = {
@@ -17,7 +17,9 @@ const API = {
     //发现好电影详情列表
     doulist_items:({id='',page=1,pageSize=15}) => `${Base}doulist_items?id=${id}&page=${page}&pageSize=${pageSize}`,
     //影片详情
-    video:({isAlbum=false,videoId=''}) => `${Base}video?videoId=${videoId}`,
+    video:({videoId='',st='',sn=''}) => `${Base}video?videoId=${videoId}&st=${st}&sn=${sn}`,
+    //影片资源
+    videosource:({videoId='',st='',sn=''}) => `${Base}videosource?videoId=${videoId}&st=${st}&sn=${sn}`,
     //获取影片详情（豆瓣）
     douban_subject:({id=''}) => `https://api.douban.com/v2/movie/subject/${id}`,
     //搜索

@@ -11,6 +11,7 @@ import {
     ScrollView,
     UIManager,
     TouchableOpacity,
+    FlatList,
     Animated,
     Image,
     LayoutAnimation,
@@ -31,7 +32,7 @@ const SortTitle = observer((props) => (
     <View style={[styles.view_hd, { borderColor: _.Color }]}>
         <Text style={styles.view_title}>{props.title}</Text>
         {
-            props.children||null
+            props.children || null
         }
     </View>
 ))
@@ -58,16 +59,87 @@ const TypeItem = observer((props) => (
 ))
 
 @observer
+class SourceItem extends PureComponent {
+    render (){
+        const { item } = this.props;
+        return (
+            <TouchableOpacity style={styles.sourceitem} activeOpacity={.7}>
+                <Text numberOfLines={2} style={styles.castname}>{item.name||' '}</Text>
+            </TouchableOpacity>
+        )
+    }
+}
+
+@observer
+class MovieSource extends PureComponent {
+    renderItem = ({ item, index }) => {
+        return <SourceItem item={item} />
+    }
+    render(){
+        const {Source} = this.props;
+        return (
+            <FlatList 
+                ref={(ref) => this.flatlist = ref}
+                style={styles.sourcelist}
+                showsHorizontalScrollIndicator={false}
+                horizontal={true}
+                data={Source.sources}
+                keyExtractor={(item, index) => index}
+                renderItem={this.renderItem}
+            />
+        ) 
+    }
+}
+
+class SourceStore {
+
+    sourceTypes = [];
+
+    movieId = '';
+
+    constructor(movieId,sourceTypes,sources){
+        this.movieId = movieId;
+        this.sourceTypes = sourceTypes;
+        this.sources = sources;
+    }
+
+    @observable 
+    st = '';
+
+    @observable 
+    sn = '';
+
+    @observable 
+    sources = [];
+
+    @action
+    getSource = () => {
+        fetchData('videosource', {
+            par: {
+                videoId: this.movieId,
+                st:this.st,
+                sn:this.sn
+            }
+        },
+            (data) => {
+                //this.sources = data.body;
+            }
+        )
+    }
+}
+
+@observer
 export default class MovieDetail extends PureComponent {
 
     constructor(props) {
         super(props);
         UIManager.setLayoutAnimationEnabledExperimental && UIManager.setLayoutAnimationEnabledExperimental(true);
+
     }
 
     scrollTop = new Animated.Value(0);
 
-    movieId = '';
+    @observable movieId = '';
 
     doubanId = '';
 
@@ -97,9 +169,27 @@ export default class MovieDetail extends PureComponent {
         return this.data.area;
     }
 
+    @computed get name() {
+        return this.data.name || '加载中..';
+    }
+
     @computed get type() {
-        return this.isRender ? this.data.type.replace(/(\s*$)/g, "").split(' ') : [''];
+        //return this.isRender ? this.data.type.replace(/(\s*$)/g, "").split(' ') : [''];
+        return this.data.type.replace(/(\s*$)/g, "").split(' ');
         //return this.Doubandata.genres || [''];
+    }
+
+    @computed get sourceTypes() {
+        return this.data.sourceTypes;
+    }
+
+    @computed get sources() {
+        return this.data.sources||[{}];
+    }
+
+    @computed
+    get Source(){
+        return new SourceStore(this.movieId,this.sourceTypes,this.sources);
     }
 
     @observable Doubandata = {};
@@ -111,10 +201,6 @@ export default class MovieDetail extends PureComponent {
 
     @computed get summary() {
         return this.Doubandata.summary || this.data.desc;
-    }
-
-    @computed get name() {
-        return this.Doubandata.title;
     }
 
     @computed get casts() {
@@ -143,13 +229,18 @@ export default class MovieDetail extends PureComponent {
     getData = () => {
         fetchData('video', {
             par: {
-                videoId: this.movieId
+                videoId: this.movieId,
+                st:'',
+                sn:''
             }
         },
             (data) => {
                 this.data = data.body;
                 this.isRender = true;
+                this.doubanId = data.body.doubanId;
                 LayoutAnimation.spring();
+                this.getDoubanData();
+                this.getComments();
             }
         )
     }
@@ -180,23 +271,24 @@ export default class MovieDetail extends PureComponent {
             (data) => {
                 this.Commentdata = data;
                 this.CommentisRender = true;
-                LayoutAnimation.spring();
+                //LayoutAnimation.spring();
             }
         )
     }
     componentDidMount() {
-        const { params: { item: { movieId, doubanId } } } = this.props.navigation.state;
+        const { params: { movieId } } = this.props.navigation.state;
         this.movieId = movieId;
-        this.doubanId = doubanId;
         this.getData();
-        this.getDoubanData();
-        this.getComments();
     }
     goBack = () => {
         const { navigation } = this.props;
         navigation.goBack();
     }
     onScroll = (e) => {
+        // Animated.event(
+        //     [{ e:{nativeEvent: { contentOffset: { y: this.scrollTop } } }}],
+        //     { useNativeDriver: true }
+        // )
         this.scrollTop.setValue(e.nativeEvent.contentOffset.y);
     }
     expand = () => {
@@ -205,7 +297,7 @@ export default class MovieDetail extends PureComponent {
     }
     render() {
         const { navigation } = this.props;
-        const { params: { item: { name } } } = navigation.state;
+        //const { params: { movieId } } = navigation.state;
         return (
             <View style={styles.content}>
                 <View style={styles.appbar}>
@@ -227,7 +319,7 @@ export default class MovieDetail extends PureComponent {
                                 inputRange: [$.STATUS_HEIGHT + 40, $.STATUS_HEIGHT + 41],
                                 outputRange: [0, 1]
                             })
-                        }]} numberOfLines={1}>{this.name || name}</Animated.Text>
+                        }]} numberOfLines={1}>{this.name}</Animated.Text>
                     </View>
                     <Animated.View style={[styles.fullcon, { backgroundColor: _.Color }, {
                         opacity: this.scrollTop.interpolate({
@@ -236,23 +328,31 @@ export default class MovieDetail extends PureComponent {
                         })
                     }]} />
                 </View>
-                <ScrollView stickyHeaderIndices={[]} onScroll={this.onScroll} showsVerticalScrollIndicator={false} style={styles.content}>
+                <Animated.ScrollView
+                    stickyHeaderIndices={[]}
+                    //scrollEventThrottle={1} // <-- 设为1以确保滚动事件的触发频率足够密集
+                    onScroll={Animated.event(
+                        [{ nativeEvent: { contentOffset: { y: this.scrollTop } } }],
+                        //{ useNativeDriver: true } // <-- 加上这一行
+                    )}
+                    showsVerticalScrollIndicator={false}
+                    style={styles.content}>
                     <Animated.Image
                         resizeMode='cover'
-                        blurRadius={4}
+                        blurRadius={3.5}
                         source={{ uri: this.img }}
                         style={[styles.bg_place, {
                             backgroundColor: _.Color, transform: [{
-                                translateY: this.scrollTop.interpolate({
-                                    inputRange: [$.STATUS_HEIGHT, $.STATUS_HEIGHT + 50],
-                                    outputRange: [0, 15]
+                                scale: this.scrollTop.interpolate({
+                                    inputRange: [0, $.STATUS_HEIGHT + 50],
+                                    outputRange: [1, 1.3]
                                 })
                             }]
                         }]} />
                     <View style={[styles.viewcon, styles.row, { marginTop: $.STATUS_HEIGHT + 50 }]}>
                         <View style={styles.poster}><Image source={{ uri: this.img }} style={[styles.fullcon, styles.borR]} /></View>
                         <View style={styles.postertext}>
-                            <Text style={[styles.title, { color: _.Color }]}>{this.name || name}</Text>
+                            <Text style={[styles.title, { color: _.Color }]}>{this.name}</Text>
                             <Star style={styles.score} score={this.score} />
                             {
                                 this.isRender && <Text style={styles.status}>{this.status}</Text>
@@ -266,14 +366,8 @@ export default class MovieDetail extends PureComponent {
                         </View>
                     </View>
                     <View style={styles.viewcon}>
-                        <SortTitle title='类型' />
-                        <View style={styles.con}>
-                            {
-                                this.type.map((el, i) => (
-                                    <TypeItem key={i} item={el} />
-                                ))
-                            }
-                        </View>
+                        <SortTitle title='剧集' />
+                        <MovieSource Source={this.Source} />
                     </View>
                     <View style={styles.viewcon}>
                         <SortTitle title='导演 / 主演' />
@@ -292,24 +386,31 @@ export default class MovieDetail extends PureComponent {
                     </View>
                     <View style={styles.viewcon}>
                         <SortTitle title='剧情介绍'>
-                        {
-                            this.DoubanisRender &&
-                            <TouchableOpacity
-                                onPress={this.expand}
-                                style={styles.view_more}
-                            >
-                                <Text style={styles.view_moretext}>{this.isMore?'收起':'展开'}</Text>
-                                <Icon name={this.isMore?'expand-less':'expand-more'} size={20} color={_.Color} />
-                            </TouchableOpacity>
-                        }
+                            {
+                                this.DoubanisRender &&
+                                <TouchableOpacity
+                                    onPress={this.expand}
+                                    style={styles.view_more}
+                                >
+                                    <Text style={styles.view_moretext}>{this.isMore ? '收起' : '展开'}</Text>
+                                    <Icon name={this.isMore ? 'expand-less' : 'expand-more'} size={20} color={_.Color} />
+                                </TouchableOpacity>
+                            }
                         </SortTitle>
                         <View style={styles.con}>
                             {
                                 this.DoubanisRender
                                     ?
-                                    <Text numberOfLines={this.isMore?0:5} style={styles.text}>{this.summary}</Text>
+                                    <Text numberOfLines={this.isMore ? 0 : 5} style={styles.text}>{this.summary}</Text>
                                     :
                                     <Loading size='small' text='' />
+                            }
+                        </View>
+                        <View style={styles.con}>
+                            {
+                                this.isRender && this.type.map((el, i) => (
+                                    <TypeItem key={i} item={el} />
+                                ))
                             }
                         </View>
                     </View>
@@ -327,7 +428,7 @@ export default class MovieDetail extends PureComponent {
                             </Touchable>
                         }
                     </View>
-                </ScrollView>
+                </Animated.ScrollView>
             </View>
         )
     }
@@ -513,7 +614,7 @@ const styles = StyleSheet.create({
         paddingHorizontal: 15,
         borderRadius: 15,
         justifyContent: 'center',
-        marginVertical: 5,
+        marginTop: 10,
         marginRight: 10
     },
     typename: {
@@ -553,11 +654,27 @@ const styles = StyleSheet.create({
     },
     view_more: {
         flexDirection: 'row',
-        alignSelf:'stretch',
+        alignSelf: 'stretch',
         alignItems: 'center',
     },
     view_moretext: {
         fontSize: 13,
         color: '#999'
     },
+    sourcelist:{
+        paddingHorizontal:15
+    },
+    sourceitem:{
+        backgroundColor:'#f1f1f1',
+        minWidth: 50,
+        maxWidth:150,
+        backgroundColor: '#eee',
+        borderBottomRightRadius: 10,
+        borderTopLeftRadius: 10,
+        justifyContent: 'center',
+        marginVertical: 5,
+        marginRight:10,
+        padding: 10,
+        alignItems: 'center',
+    }
 })

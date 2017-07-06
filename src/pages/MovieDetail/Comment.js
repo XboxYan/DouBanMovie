@@ -26,7 +26,7 @@ export default class Comment extends PureComponent {
 
     @observable isRender = false;
 
-    @observable pageSize = 20;
+    @observable pageSize = 30;
 
     @observable data = [];
 

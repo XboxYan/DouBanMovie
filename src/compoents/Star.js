@@ -3,6 +3,7 @@ import {
     StyleSheet,
     Text,
     Animated,
+    Image,
     View,
 } from 'react-native';
 import { observer } from 'mobx-react/native';
@@ -33,6 +34,8 @@ class StarCurrent extends PureComponent {
                 this.width,
                 {
                     toValue: nextProps.score * 7,
+                    //duration: 500,
+                    //useNativeDriver: true
                 }
             ).start();
         }
@@ -44,20 +47,17 @@ class StarCurrent extends PureComponent {
                 this.width,
                 {
                     toValue: this.props.score * 7,
+                    //duration: 500,
+                    //useNativeDriver: true
                 }
             ).start();
         }
     }
 
     render() {
-        const { sign } = this.props;
         return (
             <Animated.View style={[styles.star, { width: this.width }]}>
-                <Icon name={sign} size={14} color={_.Color} />
-                <Icon name={sign} size={14} color={_.Color} />
-                <Icon name={sign} size={14} color={_.Color} />
-                <Icon name={sign} size={14} color={_.Color} />
-                <Icon name={sign} size={14} color={_.Color} />
+                <Image source={require('../img/star.png')} tintColor={_.Color} style={styles.star} />
             </Animated.View>
         )
     }
@@ -66,11 +66,11 @@ class StarCurrent extends PureComponent {
 @observer
 export default class Star extends PureComponent {
     render() {
-        const { score, style, sign = 'star',isShowNum = true } = this.props;
+        const { score, style, isShowNum = true } = this.props;
         return (
             <View style={[styles.starcon, style]}>
-                <StarBase sign={sign} />
-                <StarCurrent score={score} sign={sign} />
+                <Image source={require('../img/star.png')} style={styles.star} />
+                <StarCurrent score={score} />
                 {
                     isShowNum&&<Text style={[styles.score, { color: _.Color }]}>{score || '0.0'}</Text>
                 }
@@ -88,6 +88,8 @@ const styles = StyleSheet.create({
     star: {
         flexDirection: 'row',
         position: 'absolute',
+        width:70,
+        height:14,
         zIndex: 10,
         overflow: 'hidden'
     },

@@ -39,6 +39,9 @@ const Root = TabNavigator({
 //StackNavigatorConfig
 const StackNavigatorConfig = {
     headerMode:'none',
+    cardStyle:{
+        backgroundColor:'#f1f1f1',
+    },
     navigationOptions:{
         gesturesEnabled:true
     },
@@ -54,7 +57,9 @@ const MainApp = StackNavigator({
         screen: MovieDetail,
         path:'movie/:movieid'
     },
-    Comment:{screen:Comment}
+    Comment:{
+        screen:Comment,      
+    }
 },StackNavigatorConfig);
 
 const prefix = Platform.OS == 'android' ? 'doubanmovie://doubanmovie/' : 'doubanmovie://';

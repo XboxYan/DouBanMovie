@@ -26,7 +26,7 @@ export default class HomeMore extends PureComponent {
 
     @observable isRender = false;
 
-    @observable pageSize = 20;
+    @observable pageSize = 40;
 
     @observable data = [];
 

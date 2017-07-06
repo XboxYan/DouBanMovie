@@ -24,7 +24,7 @@ const MovieEmpty = () => (
 const MovieItem = (props) => (
 	<TouchableOpacity
 		activeOpacity={.8}
-		onPress={() => props.navigation.navigate('MovieDetail',{item:props.item})}
+		onPress={() => props.navigation.navigate('MovieDetail',{movieId:props.item.movieId})}
 		style={styles.movieitem}>
 		<Image 
 			style={styles.movieimg}
@@ -76,7 +76,7 @@ export default class extends PureComponent {
 				ListFooterComponent={this.renderFooter}
 				data={[...data]}
 				onEndReached={onEndReached}
-				onEndReachedThreshold={0.1}
+				onEndReachedThreshold={0.2}
 				keyExtractor={(item, index) => item.movieId}
 				renderItem={this.renderItem}
 			/>
