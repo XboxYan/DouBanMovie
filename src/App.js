@@ -6,9 +6,9 @@ import Home from './pages/Home';
 import Movie from './pages/Movie';
 import Live from './pages/Live';
 import Me from './pages/Me';
-import HomeMore from './pages/Home/HomeMore';
-import MovieDetail from './pages/MovieDetail';
-import Comment from './pages/MovieDetail/Comment';
+import MovieDetail from './pages/Movie/index';
+import MovieMore from './pages/Movie/MovieMore';
+import Comment from './pages/Movie/Comment';
 
 //TabNavigatorConfig
 const TabNavigatorConfig = {
@@ -51,8 +51,8 @@ const StackNavigatorConfig = {
 }
 //StackNavigator
 const MainApp = StackNavigator({
-    Root: { screen: Home,path:'home/root' },
-    HomeMore:{ screen: HomeMore },
+    Root: { screen: Root,path:'home/root' },
+    MovieMore:{ screen: MovieMore },
     MovieDetail:{ 
         screen: MovieDetail,
         path:'movie/:movieid'

@@ -41,11 +41,11 @@ const CastItem = observer((props) => (
     <TouchableOpacity activeOpacity={.7} style={styles.castitem}>
         <View style={styles.castimgwrap}>
             {
-                !props.item.avatars && <Text style={styles.casttitle}>{props.item.name && props.item.name[0]}</Text>
+                (!props.item.avatars||props.DoubanisNull) && <Text style={styles.casttitle}>{props.DoubanisNull?props.item&&props.item[0]:props.item.name&&props.item.name[0]}</Text>
             }
             <Image resizeMode='cover' style={styles.castimg} source={{ uri: props.item.avatars ? props.item.avatars.medium : '...' }} />
         </View>
-        <Text numberOfLines={2} style={[styles.castname, props.director && { color: _.Color, fontStyle: 'italic' }, props.item.name && { marginTop: 10 }]}>{props.item.name}</Text>
+        <Text numberOfLines={2} style={[styles.castname, props.director && { color: _.Color, fontStyle: 'italic' }, (props.DoubanisNull?props.item:props.item.name) && { marginTop: 10 }]}>{props.DoubanisNull?props.item:props.item.name}</Text>
         {
             props.director && <Text style={[styles.director, { backgroundColor: _.Color }]}>导</Text>
         }
@@ -61,10 +61,10 @@ const TypeItem = observer((props) => (
 @observer
 class SourceItem extends PureComponent {
     render (){
-        const { item } = this.props;
+        const { item,last } = this.props;
         return (
-            <TouchableOpacity style={styles.sourceitem} activeOpacity={.7}>
-                <Text numberOfLines={2} style={styles.castname}>{item.name||' '}</Text>
+            <TouchableOpacity style={[styles.sourceitem,last&&{marginRight:30}]} activeOpacity={.7}>
+                <Text numberOfLines={2} style={styles.castname}>{item.name}</Text>
             </TouchableOpacity>
         )
     }
@@ -73,18 +73,21 @@ class SourceItem extends PureComponent {
 @observer
 class MovieSource extends PureComponent {
     renderItem = ({ item, index }) => {
-        return <SourceItem item={item} />
+        return <SourceItem item={item} last={index===this.props.Source.sources.length-1} />
     }
     render(){
         const {Source} = this.props;
+        if(Source.sources.length===0){
+            return <Text style={[styles.sourceitem,{width:50,marginLeft:15}]}>{' '}</Text>
+        }
         return (
             <FlatList 
                 ref={(ref) => this.flatlist = ref}
                 style={styles.sourcelist}
                 showsHorizontalScrollIndicator={false}
                 horizontal={true}
-                data={Source.sources}
-                keyExtractor={(item, index) => index}
+                data={[...Source.sources]}
+                keyExtractor={(item, index) => index+item.aid}
                 renderItem={this.renderItem}
             />
         ) 
@@ -110,7 +113,7 @@ class SourceStore {
     sn = '';
 
     @observable 
-    sources = [];
+    sources = [{}];
 
     @action
     getSource = () => {
@@ -141,7 +144,9 @@ export default class MovieDetail extends PureComponent {
 
     @observable movieId = '';
 
-    doubanId = '';
+    doubanId = null;
+
+    @observable DoubanisNull = false;
 
     @observable data = {};
 
@@ -175,7 +180,7 @@ export default class MovieDetail extends PureComponent {
 
     @computed get type() {
         //return this.isRender ? this.data.type.replace(/(\s*$)/g, "").split(' ') : [''];
-        return this.data.type.replace(/(\s*$)/g, "").split(' ');
+        return this.DoubanisNull?(this.data.type.split(' ').filter((el)=>!!el)):this.Doubandata.genres;
         //return this.Doubandata.genres || [''];
     }
 
@@ -184,7 +189,7 @@ export default class MovieDetail extends PureComponent {
     }
 
     @computed get sources() {
-        return this.data.sources||[{}];
+        return this.data.sources||[];
     }
 
     @computed
@@ -200,15 +205,15 @@ export default class MovieDetail extends PureComponent {
     }
 
     @computed get summary() {
-        return this.Doubandata.summary || this.data.desc;
+        return this.DoubanisNull?this.data.desc:this.Doubandata.summary;
     }
 
     @computed get casts() {
-        return this.Doubandata.casts;
+        return this.DoubanisNull?(this.data.actors?this.data.actors.split(' ').filter((el)=>!!el):['无数据']):this.Doubandata.casts;
     }
 
     @computed get directors() {
-        return this.Doubandata.directors || [''];
+        return this.DoubanisNull?['无数据']:this.Doubandata.directors||[''];
     }
 
     @observable DoubanisRender = false;
@@ -216,7 +221,7 @@ export default class MovieDetail extends PureComponent {
     @observable Commentdata = {};
 
     @computed get CommentList() {
-        return this.Commentdata.interests;
+        return this.Commentdata.interests || [];
     }
 
     @computed get CommentTotal() {
@@ -239,8 +244,12 @@ export default class MovieDetail extends PureComponent {
                 this.isRender = true;
                 this.doubanId = data.body.doubanId;
                 LayoutAnimation.spring();
-                this.getDoubanData();
-                this.getComments();
+                if(this.doubanId){
+                    this.getDoubanData();
+                    this.getComments();
+                }else{
+                    this.DoubanisNull = true;
+                }
             }
         )
     }
@@ -271,7 +280,7 @@ export default class MovieDetail extends PureComponent {
             (data) => {
                 this.Commentdata = data;
                 this.CommentisRender = true;
-                //LayoutAnimation.spring();
+                LayoutAnimation.spring();
             }
         )
     }
@@ -321,6 +330,11 @@ export default class MovieDetail extends PureComponent {
                             })
                         }]} numberOfLines={1}>{this.name}</Animated.Text>
                     </View>
+                    <Touchable
+                        style={styles.btn}
+                    >
+                        <Icon name='favorite-border' size={20} color='#fff' />
+                    </Touchable>
                     <Animated.View style={[styles.fullcon, { backgroundColor: _.Color }, {
                         opacity: this.scrollTop.interpolate({
                             inputRange: [$.STATUS_HEIGHT, $.STATUS_HEIGHT + 50],
@@ -374,12 +388,12 @@ export default class MovieDetail extends PureComponent {
                         <ScrollView showsHorizontalScrollIndicator={false} horizontal={true} contentContainerStyle={styles.con}>
                             {
                                 this.directors.map((el, i) => (
-                                    <CastItem director={true} key={i} item={el} />
+                                    <CastItem DoubanisNull={this.DoubanisNull} director={true} key={i} item={el} />
                                 ))
                             }
                             {
-                                this.DoubanisRender && this.casts.map((el, i) => (
-                                    <CastItem key={i} item={el} />
+                                (this.DoubanisRender||this.DoubanisNull) && this.casts.map((el, i) => (
+                                    <CastItem DoubanisNull={this.DoubanisNull} key={i} item={el} />
                                 ))
                             }
                         </ScrollView>
@@ -387,7 +401,7 @@ export default class MovieDetail extends PureComponent {
                     <View style={styles.viewcon}>
                         <SortTitle title='剧情介绍'>
                             {
-                                this.DoubanisRender &&
+                                (this.DoubanisRender||this.DoubanisNull) &&
                                 <TouchableOpacity
                                     onPress={this.expand}
                                     style={styles.view_more}
@@ -399,7 +413,7 @@ export default class MovieDetail extends PureComponent {
                         </SortTitle>
                         <View style={styles.con}>
                             {
-                                this.DoubanisRender
+                                (this.DoubanisRender||this.DoubanisNull)
                                     ?
                                     <Text numberOfLines={this.isMore ? 0 : 5} style={styles.text}>{this.summary}</Text>
                                     :
@@ -408,7 +422,7 @@ export default class MovieDetail extends PureComponent {
                         </View>
                         <View style={styles.con}>
                             {
-                                this.isRender && this.type.map((el, i) => (
+                                (this.DoubanisRender||this.DoubanisNull) && this.type.map((el, i) => (
                                     <TypeItem key={i} item={el} />
                                 ))
                             }
@@ -417,10 +431,10 @@ export default class MovieDetail extends PureComponent {
                     <View style={styles.viewcon}>
                         <SortTitle title={`热评(${this.CommentTotal})`} />
                         <View style={styles.con}>
-                            <CommentList isRender={this.CommentisRender} data={this.CommentList} />
+                            <CommentList isRender={this.CommentisRender||this.DoubanisNull} data={this.CommentList} />
                         </View>
                         {
-                            this.CommentisRender &&
+                            this.CommentisRender&&
                             <Touchable
                                 onPress={() => navigation.navigate('Comment', { id: this.doubanId, total: this.CommentTotal })}
                                 style={styles.commentbtn}>
@@ -528,7 +542,6 @@ const styles = StyleSheet.create({
     },
     apptitle: {
         flex: 1,
-        marginRight: 10,
         justifyContent: 'center',
         alignSelf: 'stretch',
         zIndex: 1

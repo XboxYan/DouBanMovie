@@ -69,6 +69,9 @@ export default class extends PureComponent {
 		if (!isRender) {
 			return <Loading size='small' text='' />
 		}
+		if(data.length==0){
+			return <Text style={styles.empty}>暂无评论</Text>
+		}
 		return (
 			<FlatList
 				style={[styles.content,style]}
@@ -143,4 +146,11 @@ const styles = StyleSheet.create({
 		justifyContent: 'center',
 		alignItems: 'center',
 	},
+	empty:{
+		flex:1,
+		padding:10,
+		textAlign:'center',
+		fontSize: 14,
+		color: '#666'
+	}
 });
