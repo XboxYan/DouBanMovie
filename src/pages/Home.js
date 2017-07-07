@@ -47,9 +47,10 @@ const BannerItem = observer((props) => (
     <TouchableOpacity
         activeOpacity={.9}
         onPress={() => props.navigation.navigate('MovieDetail', { movieId: props.data.vid })}
-        style={[styles.banner,{backgroundColor:_.Color}]}
+        style={styles.banner}
     >
         <Image style={styles.bannerimg} source={{ uri: props.data.img }} />
+        <Text style={styles.bannertext}>{props.data.desc||' '}</Text>
     </TouchableOpacity>
 ))
 
@@ -85,6 +86,7 @@ export default class Home extends PureComponent {
             (data) => {
                 this.data = data.body;
                 this.isRender = true;
+                console.log(data.body)
                 LayoutAnimation.spring();
             }
         )
@@ -105,7 +107,7 @@ export default class Home extends PureComponent {
             <View style={styles.content}>
                 <AppTop title='推荐' />
                 <ScrollView style={styles.content}>
-                    <Swiper style={styles.banner}>
+                    <Swiper dotColor={_.Color} style={styles.bannerWrap}>
                         {
                             this.bannerDatas.map((el, i) => <BannerItem navigation={navigation} data={el} key={i + el.id} />)
                         }
@@ -173,14 +175,35 @@ const styles = StyleSheet.create({
         fontSize: 13,
         color: '#999'
     },
+    bannerWrap:{
+        backgroundColor:'#fff'
+    },
     banner: {
         flex: 1,
         height: $.WIDTH * 9 / 16,
         borderRadius:3,
+        backgroundColor:'#f1f1f1',
+        overflow:'hidden'
     },
     bannerimg: {
         height: '100%',
         resizeMode: 'cover',
         borderRadius:3
+    },
+    bannertext:{
+        fontSize:16,
+        color:'#fff',
+        paddingHorizontal:10,
+        paddingVertical:7,
+        position:'absolute',
+        //backgroundColor:'rgba(0,0,0,.3)',
+        textShadowColor :'#000',
+        textShadowOffset: {width: 0, height: 2},
+        textShadowRadius: 20,
+        left:0,
+        right:0,
+        bottom:0,
+        //borderBottomLeftRadius: 3,
+        //borderBottomRightRadius: 3,
     }
 })

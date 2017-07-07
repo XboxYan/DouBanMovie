@@ -22,6 +22,7 @@ import { observer } from 'mobx-react/native';
 import _ from '../../theme';
 import fetchData from '../../util/Fetch';
 import Loading from '../../compoents/Loading';
+import Shadow from '../../compoents/Shadow';
 import Star from '../../compoents/Star';
 import Video from 'react-native-video';
 import Icon from 'react-native-vector-icons/MaterialIcons';
@@ -340,7 +341,7 @@ export default class MovieDetail extends PureComponent {
                             inputRange: [$.STATUS_HEIGHT, $.STATUS_HEIGHT + 50],
                             outputRange: [0, 1]
                         })
-                    }]} />
+                    }]} ><Shadow /></Animated.View>
                 </View>
                 <Animated.ScrollView
                     stickyHeaderIndices={[]}
@@ -681,7 +682,6 @@ const styles = StyleSheet.create({
         backgroundColor:'#f1f1f1',
         minWidth: 50,
         maxWidth:150,
-        backgroundColor: '#eee',
         borderBottomRightRadius: 10,
         borderTopLeftRadius: 10,
         justifyContent: 'center',

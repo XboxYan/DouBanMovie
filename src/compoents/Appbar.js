@@ -13,6 +13,7 @@ import {
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import Touchable from './Touchable';
 import { observer } from 'mobx-react/native';
+import Shadow from './Shadow';
 import _ from '../theme';
 
 @observer
@@ -25,6 +26,7 @@ export default class AppBar extends PureComponent {
 		const { onPress, title, navigation: { goBack } } = this.props;
 		return (
 			<View style={[styles.appbar, { backgroundColor: _.Color }]}>
+				<Shadow />
 				<Touchable
 					style={styles.btn}
 					onPress={this.goBack}

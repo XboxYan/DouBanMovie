@@ -11,6 +11,7 @@ import { observer } from 'mobx-react/native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import _ from '../theme';
 import Touchable from './Touchable';
+import Shadow from './Shadow';
 
 @observer
 export default class AppTop extends PureComponent {
@@ -25,6 +26,7 @@ export default class AppTop extends PureComponent {
 		const { title } = this.props;
 		return (
 			<View style={[styles.apptop,{backgroundColor:_.Color}]}>
+				<Shadow />
 				<Text style={styles.title}>{title}</Text>
 				<Touchable style={styles.ico}>
 					<Icon name='schedule' size={20} color='#fff' />
