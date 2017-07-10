@@ -66,6 +66,7 @@ export default class extends PureComponent {
 	}
 	render() {
 		const { data, isRender,onEndReached=()=>{} } = this.props;
+		const height = ($.WIDTH - 40) / 2+40;
 		if (!isRender) {
 			return <Loading size='small' text='' />
 		}
@@ -75,6 +76,7 @@ export default class extends PureComponent {
 				numColumns={3}
 				ListFooterComponent={this.renderFooter}
 				data={[...data]}
+				getItemLayout={(data, index) => ( {length: height, offset: height * index, index} )}
 				onEndReached={onEndReached}
 				onEndReachedThreshold={0.2}
 				keyExtractor={(item, index) => item.movieId}

@@ -19,7 +19,7 @@ const API = {
     //影片详情
     video:({videoId='',st='',sn=''}) => `${Base}video?videoId=${videoId}&st=${st}&sn=${sn}`,
     //影片资源
-    videosource:({videoId='',st='',sn=''}) => `${Base}videosource?videoId=${videoId}&st=${st}&sn=${sn}`,
+    videosource:({movieId='',type='',name=''}) => `${Base}videosource?movieId=${movieId}&type=${type}&name=${name}`,
     //获取影片详情（豆瓣）
     douban_subject:({id=''}) => `https://api.douban.com/v2/movie/subject/${id}`,
     //搜索

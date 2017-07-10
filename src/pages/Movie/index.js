@@ -14,6 +14,7 @@ import {
     FlatList,
     Animated,
     Image,
+    Picker,
     LayoutAnimation,
     View,
 } from 'react-native';
@@ -65,7 +66,7 @@ class SourceItem extends PureComponent {
         const { item,last } = this.props;
         return (
             <TouchableOpacity style={[styles.sourceitem,last&&{marginRight:30}]} activeOpacity={.7}>
-                <Text numberOfLines={2} style={styles.castname}>{item.name}</Text>
+                <Text numberOfLines={2} style={styles.castname}>{item.name||' '}</Text>
             </TouchableOpacity>
         )
     }
@@ -74,12 +75,12 @@ class SourceItem extends PureComponent {
 @observer
 class MovieSource extends PureComponent {
     renderItem = ({ item, index }) => {
-        return <SourceItem item={item} last={index===this.props.Source.sources.length-1} />
+        return <SourceItem item={item} last={index===this.props.Source.sourceslen-1} />
     }
     render(){
         const {Source} = this.props;
-        if(Source.sources.length===0){
-            return <Text style={[styles.sourceitem,{width:50,marginLeft:15}]}>{' '}</Text>
+        if(Source.sourceslen===0){
+            //return <Text style={[styles.sourceitem,{width:50,marginLeft:15}]}>{' '}</Text>
         }
         return (
             <FlatList 
@@ -107,26 +108,46 @@ class SourceStore {
         this.sources = sources;
     }
 
-    @observable 
-    st = '';
+    @observable
+    selectedPosition = 0;
 
-    @observable 
-    sn = '';
+    @computed
+    get type(){
+        return this.sourceTypes[this.selectedPosition].type||'';
+    }
+
+    @computed
+    get name(){
+        return this.sourceTypes[this.selectedPosition].name||'';
+    }
+
+    @computed
+    get desc(){
+        return this.sourceTypes[this.selectedPosition].desc||'';
+    }
 
     @observable 
     sources = [{}];
 
+    @computed
+    get sourceslen(){
+        return this.sources.length;
+    }
+
     @action
-    getSource = () => {
+    getSource = (value,position) => {
+        this.selectedPosition = position;
+        //this.sources = [{}];
         fetchData('videosource', {
             par: {
-                videoId: this.movieId,
-                st:this.st,
-                sn:this.sn
+                movieId: this.movieId,
+                type:this.type,
+                name:this.name
             }
         },
             (data) => {
-                //this.sources = data.body;
+                this.sources = data.body;
+                //LayoutAnimation.easeInEaseOut();
             }
         )
     }
@@ -186,11 +207,11 @@ export default class MovieDetail extends PureComponent {
     }
 
     @computed get sourceTypes() {
-        return this.data.sourceTypes;
+        return this.data.sourceTypes||[{}];
     }
 
     @computed get sources() {
-        return this.data.sources||[];
+        return this.data.sources||[{}];
     }
 
     @computed
@@ -374,6 +395,20 @@ export default class MovieDetail extends PureComponent {
                             }
                             <Text style={styles.subtitle}>{this.area} / {this.release}</Text>
                             <Text style={styles.subtitle}>{this.updateDate} 更新</Text>
+                            <View style={styles.sourceType}>
+                                <Text style={styles.pickertitle}>来源 / </Text>
+                                <Text style={[styles.pickertitle,{color: _.Color}]}>{this.Source.desc}</Text>
+                                <Icon name='expand-more' size={20} color={_.Color} />
+                                <Picker 
+                                    style={styles.picker} 
+                                    selectedValue={'pos'+this.Source.selectedPosition}
+                                    onValueChange={this.Source.getSource}
+                                    mode='dropdown'>
+                                    {
+                                        this.Source.sourceTypes.map((el,i)=><Picker.Item color={'#666'} key={i} label={el.desc||''} value={'pos'+i} />)
+                                    }
+                                </Picker>
+                            </View>
                             <TouchableOpacity activeOpacity={.7} style={[styles.playbtn, { backgroundColor: _.Color }]}>
                                 <Icon name='play-arrow' size={20} color='#fff' />
                                 <Text style={styles.playtext}>播放</Text>
@@ -571,7 +606,7 @@ const styles = StyleSheet.create({
     },
     subtitle: {
         fontSize: 14,
-        color: '#333',
+        color: '#666',
         paddingTop: 3
     },
     sptext: {
@@ -689,5 +724,23 @@ const styles = StyleSheet.create({
         marginRight:10,
         padding: 10,
         alignItems: 'center',
+    },
+    sourceType:{
+        paddingTop:3,
+        flexDirection:'row',
+        alignSelf:'stretch',
+        alignItems:'center'
+    },
+    pickertitle:{
+        fontSize: 14,
+        color: '#666',
+    },
+    picker:{
+        width:120,
+        height:30,
+        left:30,
+        padding:0,
+        opacity:0,
+        position:'absolute'
     }
 })

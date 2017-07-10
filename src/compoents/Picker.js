@@ -3,9 +3,11 @@ import {
     StyleSheet,
     Text,
     Animated,
+    TouchableOpacity,
     Image,
     View,
 } from 'react-native';
+import { observable, action, computed } from 'mobx';
 import { observer } from 'mobx-react/native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import _ from '../theme';
@@ -49,16 +51,33 @@ class StarCurrent extends PureComponent {
 }
 
 @observer
-export default class Star extends PureComponent {
+export default class Picker extends PureComponent {
+
+    @observable visible = false;
+
+    @action
+    setVisible = () => {
+        this.visible = !this.visible;
+    }
+
     render() {
-        const { score, style, isShowNum = true } = this.props;
+        const { label, selectedValue, onValueChange } = this.props;
         return (
             <View style={[styles.starcon, style]}>
-                <Image source={require('../img/star.png')} style={styles.star} />
-                <StarCurrent score={score} />
-                {
-                    isShowNum&&<Text style={[styles.score, { color: _.Color }]}>{score || '0.0'}</Text>
-                }
+                {label}
+                <Modal
+                    transparent={true}
+                    visible={this.visible}
+                    onRequestClose={this.setVisible}
+                >
+                    <TouchableOpacity style={styles.full} activeOpacity={1} onPress={this.setVisible}>
+                        <View style={styles.con}>
+                            {
+                                React.Children.map(this.props.children, (child,index) => child )
+                            }
+                        </View>
+                    </TouchableOpacity>
+                </Modal>
             </View>
         )
     }
@@ -70,17 +89,14 @@ const styles = StyleSheet.create({
         height: 20,
         alignItems: 'center'
     },
-    star: {
-        flexDirection: 'row',
-        position: 'absolute',
-        width:70,
-        height:14,
-        zIndex: 10,
-        overflow: 'hidden'
+    full: {
+        position:'absolute',
+        left:0,
+        top:0,
+        right:0,
+        bottom:0
     },
-    score: {
-        marginLeft: 75,
-        fontSize: 13,
-        paddingRight: 10
+    con: {
+        
     }
 });

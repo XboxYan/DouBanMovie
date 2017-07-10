@@ -84,10 +84,11 @@ export default class Home extends PureComponent {
             }
         },
             (data) => {
+                //LayoutAnimation.spring();
                 this.data = data.body;
                 this.isRender = true;
-                console.log(data.body)
                 LayoutAnimation.spring();
+                
             }
         )
     }
@@ -102,7 +103,7 @@ export default class Home extends PureComponent {
 
     render() {
         const { navigation } = this.props;
-        let [movie = {}, tv = {}, dongman = {}, zongyi = {}, wei = {}, shaoer = {}] = this.viewItemModels;
+        let [movie, tv, dongman, zongyi, wei, shaoer] = this.viewItemModels;
         return (
             <View style={styles.content}>
                 <AppTop title='推荐' />
@@ -150,7 +151,8 @@ const styles = StyleSheet.create({
         marginBottom: 10,
         backgroundColor: '#fff',
         paddingVertical: 10,
-        minHeight: 150
+        minHeight: 150,
+        overflow:'hidden'
     },
     view_hd: {
         height: 16,
@@ -186,6 +188,7 @@ const styles = StyleSheet.create({
         overflow:'hidden'
     },
     bannerimg: {
+        width:'100%',
         height: '100%',
         resizeMode: 'cover',
         borderRadius:3
