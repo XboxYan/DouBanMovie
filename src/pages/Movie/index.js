@@ -62,10 +62,14 @@ const TypeItem = observer((props) => (
 
 @observer
 class SourceItem extends PureComponent {
+    getMoviePlay = () => {
+        const { getMoviePlay,index } = this.props;
+        getMoviePlay(index);
+    }
     render (){
         const { item,last } = this.props;
         return (
-            <TouchableOpacity style={[styles.sourceitem,last&&{marginRight:30}]} activeOpacity={.7}>
+            <TouchableOpacity onPress={this.getMoviePlay} style={[styles.sourceitem,last&&{marginRight:30}]} activeOpacity={.7}>
                 <Text numberOfLines={2} style={styles.castname}>{item.name||' '}</Text>
             </TouchableOpacity>
         )
@@ -75,12 +79,12 @@ class SourceItem extends PureComponent {
 @observer
 class MovieSource extends PureComponent {
     renderItem = ({ item, index }) => {
-        return <SourceItem item={item} last={index===this.props.Source.sourceslen-1} />
+        return <SourceItem item={item} index={index} getMoviePlay={this.props.Source.getMoviePlay} last={index===this.props.Source.sourceslen-1} />
     }
     render(){
         const {Source} = this.props;
         if(Source.sourceslen===0){
-            //return <Text style={[styles.sourceitem,{width:50,marginLeft:15}]}>{' '}</Text>
+            return <Text style={[styles.sourceitem,{width:50,marginLeft:15}]}>{' '}</Text>
         }
         return (
             <FlatList 
@@ -88,6 +92,8 @@ class MovieSource extends PureComponent {
                 style={styles.sourcelist}
                 showsHorizontalScrollIndicator={false}
                 horizontal={true}
+                initialNumToRender = {20}
+                removeClippedSubviews={false}
                 data={[...Source.sources]}
                 keyExtractor={(item, index) => index+item.aid}
                 renderItem={this.renderItem}
@@ -100,16 +106,30 @@ class SourceStore {
 
     sourceTypes = [];
 
+    sourceTypesLength = 0;
+
     movieId = '';
+
+    @observable
+    playUrl = '';
 
     constructor(movieId,sourceTypes,sources){
         this.movieId = movieId;
         this.sourceTypes = sourceTypes;
+        this.sourceTypesLength = sourceTypes.length;
         this.sources = sources;
     }
 
     @observable
     selectedPosition = 0;
+
+    @observable
+    movieIndex = new Array(this.sourceTypesLength).fill(0);
+
+    @computed
+    get currentIndex(){
+        return this.movieIndex[this.selectedPosition];
+    }
 
     @computed
     get type(){
@@ -126,12 +146,106 @@ class SourceStore {
         return this.sourceTypes[this.selectedPosition].desc||'';
     }
 
+    @computed
+    get basePlayUrl(){
+        return this.sources[this.currentIndex].playUrl||'';
+    }
+
     @observable 
-    sources = [{}];
+    sources = [];
 
     @computed
     get sourceslen(){
         return this.sources.length;
+    }
+
+    @action
+    getPlayUri = async (id,token) => {
+        return await fetch(`https://newplayer.lsmmr.com/parse.php?xmlurl=null&id=${id}&dysign=${token}`)
+        .then((response) => {
+            
+            if (response.ok) {
+                let url = response.text()['_65'].split('<file><![CDATA[')[1].split(']]></file>')[0];
+                return url;
+            }
+        })
+        .then((data) => {
+            return data;
+        })
+        .catch((err) => {
+            console.warn(err)
+        })
+    }
+
+    @action
+    getToken = async (id) => {
+        let time = (new Date()).valueOf();
+        return await fetch(`${_Base}token?_=${time}&id=${id}`)
+        .then((response) => {
+            if (response.ok) {
+                return response.json();
+            }
+        })
+        .then((data) => {
+            return data.token;
+        })
+        .catch((err) => {
+            console.warn(err)
+        })
+    }
+
+    @action
+    getMovieInfo = async (Url,referUrl) => {
+        return await fetch(Url,{headers:{
+            Referer:referUrl
+        }})
+        .then((response) => {
+            if (response.ok) {
+                return response.text();
+            }
+        })
+        .then((data) => {
+            return data;
+        })
+        .catch((err) => {
+            console.warn(err)
+        })
+    }
+
+    @action
+    getKankan = async (Url) => {
+        const [base,id] = Url.split('id=');
+        //let html = await this.getMovieInfo(Url,referUrl);
+        let token = await this.getToken(id);
+        let playlist = await this.getPlayUri(id,token);
+        alert(playlist)
+    }
+
+    @action
+    getMoviePlay = (movieIndex) => {
+        this.movieIndex[this.selectedPosition] = movieIndex;
+        fetch(this.basePlayUrl)
+        .then((response)=>{
+            if (response.ok) {
+                return response.headers.map
+            }
+        })
+        .then((headers)=>{
+            const {jsurl:[jsUrl],infourl:[infoUrl]} = headers;
+            const [Url,referUrl,type,name] = infoUrl.split('####');
+            switch (type) {
+                case 'kankan':
+                    this.getKankan(Url);
+                    break;
+            
+                default:
+                    break;
+            }
+            
+        })
+        .catch((err) => {
+            console.warn(err)
+        })
     }
 
     @action
@@ -147,7 +261,7 @@ class SourceStore {
         },
             (data) => {
                 this.sources = data.body;
-                //LayoutAnimation.easeInEaseOut();
+                LayoutAnimation.spring();
             }
         )
     }
@@ -211,7 +325,7 @@ export default class MovieDetail extends PureComponent {
     }
 
     @computed get sources() {
-        return this.data.sources||[{}];
+        return this.data.sources||[];
     }
 
     @computed
@@ -416,7 +530,7 @@ export default class MovieDetail extends PureComponent {
                         </View>
                     </View>
                     <View style={styles.viewcon}>
-                        <SortTitle title='剧集' />
+                        <SortTitle title={`剧集(${this.Source.sourceslen})`} />
                         <MovieSource Source={this.Source} />
                     </View>
                     <View style={styles.viewcon}>
@@ -723,6 +837,7 @@ const styles = StyleSheet.create({
         marginVertical: 5,
         marginRight:10,
         padding: 10,
+        overflow:'hidden',
         alignItems: 'center',
     },
     sourceType:{

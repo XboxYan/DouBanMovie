@@ -80,7 +80,7 @@ export default class Home extends PureComponent {
     getHot = () => {
         fetchData('hotPlay', {
             par: {
-                type: 0
+                type: 3
             }
         },
             (data) => {
@@ -134,7 +134,7 @@ export default class Home extends PureComponent {
                         <MovieList isRender={this.isRender} data={wei.videos} navigation={navigation} />
                     </View>
                     <View style={styles.viewcon}>
-                        <MovieTitle title={'热门少儿'} navigation={navigation} />
+                        <MovieTitle title={shaoer.title || ''} navigation={navigation} />
                         <MovieList isRender={this.isRender} data={shaoer.videos} navigation={navigation} />
                     </View>
                 </ScrollView>

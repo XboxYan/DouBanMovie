@@ -1,4 +1,5 @@
 global.Base = 'http://120.55.16.187/newmovie/api/';
+global._Base = 'http://120.55.16.187/newmovie/btmovie/';
 global.appVersion = '5.3.1';
 
 const API = {
@@ -25,7 +26,7 @@ const API = {
     //搜索
     search:({keywords=''}) => `${Base}videos?keywords=${keywords}`,
     //评论
-    get_comments:({id='',start=0,count=5}) => `https://frodo.douban.com/api/v2/movie/${id}/interests?start=${start}&count=${count}&order_by=hot`,
+    get_comments:({id='',start=0,count=5}) => `https://frodo.douban.com/api/v2/movie/${id}/interests?start=${start}&count=${count}&order_by=time`,
     //热门
     hotPlay:({type=0}) => `${Base}hotPlay?type=${type}`,
 }
