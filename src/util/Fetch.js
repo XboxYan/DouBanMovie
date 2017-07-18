@@ -1,6 +1,6 @@
 global.Base = 'http://120.55.16.187/newmovie/api/';
 global._Base = 'http://120.55.16.187/newmovie/btmovie/';
-global.appVersion = '5.3.1';
+global.appVersion = '5.3.4';
 
 const API = {
     //首页
@@ -31,7 +31,7 @@ const API = {
     hotPlay:({type=0}) => `${Base}hotPlay?type=${type}`,
 }
 
-const fetchData = (url,{headers={'appVersion': appVersion},par = {} } = {},success,error=(err)=>{console.warn(err)}) => {
+const fetchData = (url,{headers={'appVersion': appVersion,'xigua':true},par = {} } = {},success,error=(err)=>{console.warn(err)}) => {
     const URL = API[url](par);
     fetch(URL, {
         method: 'GET',

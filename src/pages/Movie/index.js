@@ -62,15 +62,18 @@ const TypeItem = observer((props) => (
 
 @observer
 class SourceItem extends PureComponent {
-    getMoviePlay = () => {
-        const { getMoviePlay,index } = this.props;
-        getMoviePlay(index);
+    getUrl = () => {
+        const { Source:{getUrl,currentIndex},index } = this.props;
+        if(currentIndex!=index){
+            getUrl(index);
+        }
     }
     render (){
-        const { item,last } = this.props;
+        const { item,last,index,Source:{currentIndex} } = this.props;
         return (
-            <TouchableOpacity onPress={this.getMoviePlay} style={[styles.sourceitem,last&&{marginRight:30}]} activeOpacity={.7}>
+            <TouchableOpacity onPress={this.getUrl} style={[styles.sourceitem,last&&{marginRight:30}]} activeOpacity={.7}>
                 <Text numberOfLines={2} style={styles.castname}>{item.name||' '}</Text>
+                <View style={[styles.sourcedot,{backgroundColor:_.Color},currentIndex===index&&{opacity:1}]} />
             </TouchableOpacity>
         )
     }
@@ -79,7 +82,7 @@ class SourceItem extends PureComponent {
 @observer
 class MovieSource extends PureComponent {
     renderItem = ({ item, index }) => {
-        return <SourceItem item={item} index={index} getMoviePlay={this.props.Source.getMoviePlay} last={index===this.props.Source.sourceslen-1} />
+        return <SourceItem item={item} index={index} Source={this.props.Source} last={index===this.props.Source.sourceslen-1} />
     }
     render(){
         const {Source} = this.props;
@@ -111,7 +114,7 @@ class SourceStore {
     movieId = '';
 
     @observable
-    playUrl = '';
+    playUrl = _Base;
 
     constructor(movieId,sourceTypes,sources){
         this.movieId = movieId;
@@ -160,12 +163,25 @@ class SourceStore {
     }
 
     @action
-    getPlayUri = async (id,token) => {
+    getKanKanPlayUri = async (id,token) => {
         return await fetch(`https://newplayer.lsmmr.com/parse.php?xmlurl=null&id=${id}&dysign=${token}`)
         .then((response) => {
             
             if (response.ok) {
-                let url = response.text()['_65'].split('<file><![CDATA[')[1].split(']]></file>')[0];
+                let baseurl = response.text()['_65'].split('<file><![CDATA[')[1].split(']]></file>')[0];
+                let url = '';
+                switch (this.name) {
+                    case 'leyun':
+                    case 'letv':
+                        url = baseurl.replace(/\?/,'.m3u8?');
+                        break;
+                    case 'iqy':
+                    case 'qiyi':
+                        url = baseurl;
+                        break;
+                    default:
+                        break;
+                }
                 return url;
             }
         })
@@ -217,35 +233,53 @@ class SourceStore {
         const [base,id] = Url.split('id=');
         //let html = await this.getMovieInfo(Url,referUrl);
         let token = await this.getToken(id);
-        let playlist = await this.getPlayUri(id,token);
-        alert(playlist)
+        let playlist = await this.getKanKanPlayUri(id,token);
+        return playlist;
     }
 
     @action
-    getMoviePlay = (movieIndex) => {
-        this.movieIndex[this.selectedPosition] = movieIndex;
-        fetch(this.basePlayUrl)
+    getInfos = async () => {
+        return await fetch(this.basePlayUrl)
         .then((response)=>{
             if (response.ok) {
                 return response.headers.map
             }
         })
-        .then((headers)=>{
-            const {jsurl:[jsUrl],infourl:[infoUrl]} = headers;
-            const [Url,referUrl,type,name] = infoUrl.split('####');
-            switch (type) {
-                case 'kankan':
-                    this.getKankan(Url);
-                    break;
-            
-                default:
-                    break;
-            }
-            
-        })
         .catch((err) => {
             console.warn(err)
         })
+    }
+
+    @action
+    getMoviePlay = async (movieIndex) => {
+        let headers = await this.getInfos();
+        const {jsurl:[jsUrl],infourl:[infoUrl]} = headers;
+        const [Url,referUrl,type,name] = infoUrl.split('####');
+        switch (type) {
+            case 'kankan':
+                return await this.getKankan(Url);
+                break;
+            default:
+                break;
+        }
+    }
+
+    @action
+    getUrl = async (movieIndex) => {
+        let playUrl = '';
+        this.movieIndex[this.selectedPosition] = movieIndex;
+        switch (this.type) {
+            case 'kankan':
+                playUrl = await this.getMoviePlay(movieIndex);
+                break;
+            case 'btpan':
+                playUrl = this.basePlayUrl;
+                break;
+            default:
+                break;
+        }
+        this.playUrl = playUrl;
+        alert(playUrl);
     }
 
     @action
@@ -336,7 +370,7 @@ export default class MovieDetail extends PureComponent {
     @observable Doubandata = {};
 
     @computed get score() {
-        return this.data.score;
+        return this.DoubanisNull?this.data.score:(this.DoubanisRender?this.Doubandata.rating.average:0);
         //return this.DoubanisRender?this.Doubandata.rating.average:0;
     }
 
@@ -436,6 +470,10 @@ export default class MovieDetail extends PureComponent {
         // )
         this.scrollTop.setValue(e.nativeEvent.contentOffset.y);
     }
+    play = () => {
+        const { getUrl,currentIndex } = this.Source;
+        getUrl(currentIndex);
+    }
     expand = () => {
         LayoutAnimation.spring();
         this.isMore = !this.isMore;
@@ -523,11 +561,19 @@ export default class MovieDetail extends PureComponent {
                                     }
                                 </Picker>
                             </View>
-                            <TouchableOpacity activeOpacity={.7} style={[styles.playbtn, { backgroundColor: _.Color }]}>
+                            <TouchableOpacity onPress={this.play} activeOpacity={.7} style={[styles.playbtn, { backgroundColor: _.Color }]}>
                                 <Icon name='play-arrow' size={20} color='#fff' />
                                 <Text style={styles.playtext}>播放</Text>
                             </TouchableOpacity>
                         </View>
+                    </View>
+                    <View style={styles.viewcon}>
+                        <Video 
+                            source={{uri: this.Source.playUrl}}
+                            style={styles.backgroundVideo}
+                            resizeMode="contain"
+                            paused={false}
+                        />
                     </View>
                     <View style={styles.viewcon}>
                         <SortTitle title={`剧集(${this.Source.sourceslen})`} />
@@ -857,5 +903,19 @@ const styles = StyleSheet.create({
         padding:0,
         opacity:0,
         position:'absolute'
+    },
+    backgroundVideo:{
+        height:200,
+        backgroundColor:'#000',
+        marginHorizontal:10,
+    },
+    sourcedot:{
+        position:'absolute',
+        right:4,
+        top:4,
+        width:5,
+        height:5,
+        borderRadius:5,
+        opacity:0
     }
 })
