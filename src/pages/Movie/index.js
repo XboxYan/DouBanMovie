@@ -12,6 +12,7 @@ import {
     UIManager,
     TouchableOpacity,
     FlatList,
+    ToastAndroid,
     Animated,
     Image,
     Picker,
@@ -163,30 +164,28 @@ class SourceStore {
     }
 
     @action
-    getKanKanPlayUri = async (id,token) => {
-        return await fetch(`https://newplayer.lsmmr.com/parse.php?xmlurl=null&id=${id}&dysign=${token}`)
+    getLetv = async (Url,Referer) => {
+        return await fetch(Url,{headers:{
+            Referer:Referer
+        }})
         .then((response) => {
-            
             if (response.ok) {
-                let baseurl = response.text()['_65'].split('<file><![CDATA[')[1].split(']]></file>')[0];
-                let url = '';
-                switch (this.name) {
-                    case 'leyun':
-                    case 'letv':
-                        url = baseurl.replace(/\?/,'.m3u8?');
-                        break;
-                    case 'iqy':
-                    case 'qiyi':
-                        url = baseurl;
-                        break;
-                    default:
-                        break;
-                }
-                return url;
+                return response.url;
             }
         })
-        .then((data) => {
-            return data;
+        .catch((err) => {
+            console.warn(err)
+        })
+    }
+
+    @action
+    getKanKanPlayUri = async (id,token) => {
+        return await fetch(`https://newplayer.lsmmr.com/parse.php?xmlurl=null&id=${id}&dysign=${token}`)
+        .then(async (response) => {        
+            if (response.ok) {
+                let baseurl = response.text()['_65'].split('<file><![CDATA[')[1].split(']]></file>')[0];
+                return baseurl;
+            }
         })
         .catch((err) => {
             console.warn(err)
@@ -211,29 +210,25 @@ class SourceStore {
     }
 
     @action
-    getMovieInfo = async (Url,referUrl) => {
-        return await fetch(Url,{headers:{
-            Referer:referUrl
-        }})
-        .then((response) => {
-            if (response.ok) {
-                return response.text();
-            }
-        })
-        .then((data) => {
-            return data;
-        })
-        .catch((err) => {
-            console.warn(err)
-        })
-    }
-
-    @action
     getKankan = async (Url) => {
         const [base,id] = Url.split('id=');
         //let html = await this.getMovieInfo(Url,referUrl);
         let token = await this.getToken(id);
         let playlist = await this.getKanKanPlayUri(id,token);
+        switch (this.name) {
+            case 'leyun':
+            case 'letv':
+            case 'leshi':
+            case 'lev':
+                playlist = await this.getLetv(playlist,Url);
+                //url = baseurl.replace(/\?/,'.m3u8?');
+                break;
+            case 'iqy':
+            case 'qiyi':
+                break;
+            default:
+                break;
+        }
         return playlist;
     }
 
@@ -270,6 +265,7 @@ class SourceStore {
         this.movieIndex[this.selectedPosition] = movieIndex;
         switch (this.type) {
             case 'kankan':
+            case 'kan360':
                 playUrl = await this.getMoviePlay(movieIndex);
                 break;
             case 'btpan':
@@ -279,7 +275,7 @@ class SourceStore {
                 break;
         }
         this.playUrl = playUrl;
-        alert(playUrl);
+        ToastAndroid.show(playUrl,ToastAndroid.SHORT);
     }
 
     @action
@@ -572,6 +568,7 @@ export default class MovieDetail extends PureComponent {
                             source={{uri: this.Source.playUrl}}
                             style={styles.backgroundVideo}
                             resizeMode="contain"
+                            repeat={true}
                             paused={false}
                         />
                     </View>
