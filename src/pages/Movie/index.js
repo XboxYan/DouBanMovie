@@ -227,9 +227,33 @@ class SourceStore {
             case 'qiyi':
                 break;
             default:
+                playlist = await this.getLetv(playlist,Url);
                 break;
         }
         return playlist;
+    }
+
+    @action
+    getKan360Url = async (Url) => {
+        return await fetch(`http://120.55.16.187/newmovie/btmovie/vparse?url=${Url}`)
+        .then(async (response) => {        
+            if (response.ok) {
+                return response.json();
+            }
+        })
+        .then((data) => {
+            return data.body.videoInfo[data.body.videoInfo.length-1].url;
+        })
+        .catch((err) => {
+            console.warn(err)
+        })
+    }
+
+    @action
+    getKan360 = async (Url) => {
+        let playlist = await this.getKan360Url(Url);
+        playlist = await this.getLetv(playlist,Url); 
+        return playlist
     }
 
     @action
@@ -253,6 +277,9 @@ class SourceStore {
         switch (type) {
             case 'kankan':
                 return await this.getKankan(Url);
+                break;
+            case 'kan360':
+                return await this.getKan360(Url);
                 break;
             default:
                 break;
