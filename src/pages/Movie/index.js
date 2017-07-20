@@ -183,8 +183,8 @@ class SourceStore {
         return await fetch(`https://newplayer.lsmmr.com/parse.php?xmlurl=null&id=${id}&dysign=${token}`)
         .then(async (response) => {        
             if (response.ok) {
-                let baseurl = response.text()['_65'].split('<file><![CDATA[')[1].split(']]></file>')[0];
-                return baseurl;
+                let str = response.text()['_65'];
+                return str;
             }
         })
         .catch((err) => {
@@ -210,27 +210,62 @@ class SourceStore {
     }
 
     @action
+    getYouku = async (vid) => {
+        let time = (new Date()).valueOf();
+        return await fetch(`https://ups.youku.com/ups/get.json?vid=${vid}&ccode=0807&client_ip=192.168.1.1&utid=LU/3EVphOx8CAatxaNLcsS7F&client_ts=${time}`)
+        .then((response) => {
+            if (response.ok) {
+                return response.json();
+            }
+        })
+        .then((data) => {
+            return data.data.stream;
+        })
+        .catch((err) => {
+            console.warn(err)
+        })
+    }
+
+    @action
     getKankan = async (Url) => {
         const [base,id] = Url.split('id=');
         //let html = await this.getMovieInfo(Url,referUrl);
         let token = await this.getToken(id);
-        let playlist = await this.getKanKanPlayUri(id,token);
-        switch (this.name) {
-            case 'leyun':
-            case 'letv':
-            case 'leshi':
-            case 'lev':
-                playlist = await this.getLetv(playlist,Url);
-                //url = baseurl.replace(/\?/,'.m3u8?');
-                break;
-            case 'iqy':
-            case 'qiyi':
-                break;
-            default:
-                playlist = await this.getLetv(playlist,Url);
-                break;
+        let xml = await this.getKanKanPlayUri(id,token);
+        let url = '';
+        let regSite = /site->(\S+)}{vid/g;
+        let site = regSite.exec(xml);
+        if(site&&site[1]=='youku'){
+            let regVid = /vid->(\S+)}{stype/g;
+            let vid = regVid.exec(xml)[1];
+            let playlist = await this.getYouku(vid);
+            url = playlist[playlist.length-1].m3u8_url;
+        }else{
+            let regUrl = /defa->(\S+)}{deft/g;
+            let playlist = regUrl.exec(xml)[1].split('|');
+            url = playlist[playlist.length-1]
+            url = await this.getLetv(url,Url)
         }
-        return playlist;
+        
+        // switch (this.name) {
+        //     case 'leyun':
+        //     case 'letv':
+        //     case 'leshi':
+        //     case 'lev':
+        //         playlist = await this.getLetv(playlist,Url);
+        //         //url = baseurl.replace(/\?/,'.m3u8?');
+        //         break;
+        //     case 'youku':
+        //         playlist = playlist.m3u8_url;
+        //         break;
+        //     case 'iqy':
+        //     case 'qiyi':
+        //         break;
+        //     default:
+        //         playlist = await this.getLetv(playlist,Url);
+        //         break;
+        // }
+        return url;
     }
 
     @action
@@ -252,7 +287,7 @@ class SourceStore {
     @action
     getKan360 = async (Url) => {
         let playlist = await this.getKan360Url(Url);
-        playlist = await this.getLetv(playlist,Url); 
+        playlist = await this.getLetv(playlist,Url);
         return playlist
     }
 
@@ -595,6 +630,7 @@ export default class MovieDetail extends PureComponent {
                             source={{uri: this.Source.playUrl}}
                             style={styles.backgroundVideo}
                             resizeMode="contain"
+                            controls={true}
                             repeat={true}
                             paused={false}
                         />
