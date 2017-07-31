@@ -180,21 +180,22 @@ class SourceStore {
 
     @action
     getKanKanPlayUri = async (id,token) => {
-        return await fetch(`https://newplayer.lsmmr.com/parse.php?xmlurl=null&id=${id}&dysign=${token}`)
-        .then(async (response) => {        
+        return await fetch(`https://newplayer.lsmmr.com/parse.php?h5url=null&id=${id}&dysign=${token}&script=1`)
+        .then((response) => {
             if (response.ok) {
-                let str = response.text()['_65'];
-                return str;
+                return response.text();
             }
         })
         .catch((err) => {
-            console.warn(err)
+            console.warn(err);
+            return '';
         })
     }
 
     @action
     getToken = async (id) => {
         let time = (new Date()).valueOf();
+        //alert(`${_Base}token?_=${time}&id=${id}`)
         return await fetch(`${_Base}token?_=${time}&id=${id}`)
         .then((response) => {
             if (response.ok) {
@@ -202,6 +203,7 @@ class SourceStore {
             }
         })
         .then((data) => {
+            ToastAndroid.show(data.token,ToastAndroid.SHORT);
             return data.token;
         })
         .catch((err) => {
@@ -227,25 +229,76 @@ class SourceStore {
     }
 
     @action
+    getMovieInfo = async (Url,referUrl) => {
+        return await fetch(Url,{headers:{
+            'Referer':referUrl,
+            'Upgrade-Insecure-Requests':1,
+            'User-Agent':'Mozilla/5.0 (Linux; Android 5.0; SM-G900P Build/LRX21T) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/59.0.3071.115 Mobile Safari/537.36'
+        }})
+        .then((response) => {
+            if (response.ok) {
+                let text = response.text();
+                if(text){
+                    let reg = /\/\/\[parseArea\]([\s\S]*)\/\/\[\/parseArea\]/g;
+                    const [base,parseArea] = reg.exec(text);
+                    return parseArea;
+                }
+                return '';
+            }
+        })
+        .catch((err) => {
+            console.log(err)
+        })
+    }
+
+    @action
+    getPlayerInfo = async (sina,id,tm,sign,userlink,refer) => {
+
+        let time = (new Date()).valueOf();
+        let Url = `https://newplayer.dongyaodx.com/parse.php?h5url=null&id=${id}&tm=${tm}&sign=${sign}&script=1&userlink=${encodeURI(userlink)}&ikan=${sina}&_=${time}`;
+        console.log(Url)
+        return await fetch(Url,{headers:{
+            'Referer':refer
+        }})
+        .then((response) => {
+            if (response.ok) {
+                return response.text();
+            }
+        })
+        .catch((err) => {
+            console.log(err)
+        })
+    }
+
+    @action
     getKankan = async (Url) => {
         const [base,id] = Url.split('id=');
-        //let html = await this.getMovieInfo(Url,referUrl);
+        //let _referUrl = referUrl.replace(/www/g,'m');
+        //let _Url = Url.replace(/.php/g,'1.php');
+        //let html = await this.getMovieInfo(_Url,_referUrl);
+        //console.log(html)
+        //let reg = /value\D+(\d+)[\s\S]*urlplay1\D+'(\w+)';\D+tm\D+'(\d+)';\D+sign\D+'(\w+)';\D+refer\D+'(\S+)';/g;
+        //const [_html,sina,id,tm,sign,refer] = reg.exec(html);
+        //console.log([sina,id,tm,sign,refer])
+        //let playInfo = await this.getPlayerInfo(sina,id,tm,sign,refer,_Url);
+        //console.log(playInfo)
         let token = await this.getToken(id);
-        let xml = await this.getKanKanPlayUri(id,token);
-        let url = '';
-        let regSite = /site->(\S+)}{vid/g;
-        let site = regSite.exec(xml);
-        if(site&&site[1]=='youku'){
-            let regVid = /vid->(\S+)}{stype/g;
-            let vid = regVid.exec(xml)[1];
-            let playlist = await this.getYouku(vid);
-            url = playlist[playlist.length-1].m3u8_url;
-        }else{
-            let regUrl = /defa->(\S+)}{deft/g;
-            let playlist = regUrl.exec(xml)[1].split('|');
-            url = playlist[playlist.length-1]
-            url = await this.getLetv(url,Url)
-        }
+        let url = await this.getKanKanPlayUri(id,token);
+        //alert(url)
+        // let url = '';
+        // let regSite = /site->(\S+)}{vid/g;
+        // let site = regSite.exec(xml);
+        // if(site&&site[1]=='youku'){
+        //     let regVid = /vid->(\S+)}{stype/g;
+        //     let vid = regVid.exec(xml)[1];
+        //     let playlist = await this.getYouku(vid);
+        //     url = playlist[playlist.length-1].m3u8_url;
+        // }else{
+        //     let regUrl = /defa->(\S+)}{deft/g;
+        //     let playlist = regUrl.exec(xml)[1].split('|');
+        //     url = playlist[playlist.length-1]
+        //     url = await this.getLetv(url,Url)
+        // }
         
         // switch (this.name) {
         //     case 'leyun':
@@ -337,7 +390,7 @@ class SourceStore {
                 break;
         }
         this.playUrl = playUrl;
-        ToastAndroid.show(playUrl,ToastAndroid.SHORT);
+        ToastAndroid.show(this.type+playUrl,ToastAndroid.SHORT);
     }
 
     @action
@@ -499,7 +552,7 @@ export default class MovieDetail extends PureComponent {
     getComments = () => {
         fetchData('get_comments', {
             headers: {
-                'User-Agent': 'api-client/1 com.douban.frodo/4.9.0(88) Android/25 cm_victara motorola XT1085  rom:android'
+                'User-Agent': 'api-client/1 com.douban.frodo'
             },
             par: {
                 id: this.doubanId
@@ -615,7 +668,7 @@ export default class MovieDetail extends PureComponent {
                                     onValueChange={this.Source.getSource}
                                     mode='dropdown'>
                                     {
-                                        this.Source.sourceTypes.map((el,i)=><Picker.Item color={'#666'} key={i} label={el.desc||''} value={'pos'+i} />)
+                                        this.Source.sourceTypes.map((el,i)=><Picker.Item color={'#666'} key={i} label={el.desc+el.type||''} value={'pos'+i} />)
                                     }
                                 </Picker>
                             </View>

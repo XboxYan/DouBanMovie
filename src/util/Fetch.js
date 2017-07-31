@@ -26,7 +26,7 @@ const API = {
     //搜索
     search:({keywords=''}) => `${Base}videos?keywords=${keywords}`,
     //评论
-    get_comments:({id='',start=0,count=5}) => `https://frodo.douban.com/api/v2/movie/${id}/interests?start=${start}&count=${count}&order_by=time`,
+    get_comments:({id='',start=0,count=5}) => `https://frodo.douban.com/api/v2/movie/${id}/interests?start=${start}&count=${count}&order_by=latest`,
     //热门
     hotPlay:({type=0}) => `${Base}hotPlay?type=${type}`,
 }
