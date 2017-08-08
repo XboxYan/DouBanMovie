@@ -179,11 +179,19 @@ class SourceStore {
     }
 
     @action
-    getKanKanPlayUri = async (id,token) => {
-        return await fetch(`https://newplayer.lsmmr.com/parse.php?h5url=null&id=${id}&dysign=${token}&script=1`)
+    getKanKanInfo = async (id,token) => {
+        return await fetch(`https://newplayer.lsmmr.com/parse.php?h5url=null&id=${id}&dysign=${token}&script=1`,{headers:{
+            Referer:'https://newplayer.dongyaodx.com'
+        }})
         .then((response) => {
             if (response.ok) {
-                return response.text();
+                let text = response.text();
+                if(text[0]){
+                    let reg = /\/\/\[parseArea\]([\s\S]*)\/\/\[\/parseArea\]/g;
+                    const [base,parseArea] = reg.exec(text);
+                    return parseArea;
+                }
+                return '';
             }
         })
         .catch((err) => {
@@ -232,18 +240,10 @@ class SourceStore {
     getMovieInfo = async (Url,referUrl) => {
         return await fetch(Url,{headers:{
             'Referer':referUrl,
-            'Upgrade-Insecure-Requests':1,
-            'User-Agent':'Mozilla/5.0 (Linux; Android 5.0; SM-G900P Build/LRX21T) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/59.0.3071.115 Mobile Safari/537.36'
         }})
         .then((response) => {
             if (response.ok) {
-                let text = response.text();
-                if(text){
-                    let reg = /\/\/\[parseArea\]([\s\S]*)\/\/\[\/parseArea\]/g;
-                    const [base,parseArea] = reg.exec(text);
-                    return parseArea;
-                }
-                return '';
+                return response.text();
             }
         })
         .catch((err) => {
@@ -270,20 +270,29 @@ class SourceStore {
         })
     }
 
+    regIkan = (s) => {
+        let ikan = eval(s);
+        let reg = /([\s\S]*)eval/g
+        const [_html,ikan2] = reg.exec(ikan);
+        eval(ikan2);
+        return e1r.join('')
+    }
+
     @action
-    getKankan = async (Url) => {
-        const [base,id] = Url.split('id=');
+    getKankan = async (Url,referUrl) => {
+        //const [base,id] = Url.split('id=');
         //let _referUrl = referUrl.replace(/www/g,'m');
         //let _Url = Url.replace(/.php/g,'1.php');
-        //let html = await this.getMovieInfo(_Url,_referUrl);
+        let html = await this.getMovieInfo(Url,referUrl);
+        //alert(html)
         //console.log(html)
-        //let reg = /value\D+(\d+)[\s\S]*urlplay1\D+'(\w+)';\D+tm\D+'(\d+)';\D+sign\D+'(\w+)';\D+refer\D+'(\S+)';/g;
-        //const [_html,sina,id,tm,sign,refer] = reg.exec(html);
-        //console.log([sina,id,tm,sign,refer])
+        let reg = /urlplay1\D+'(\w+)';\D+tm\D+'(\d+)';\D+sign\D+'(\w+)';\D+refer\D+'(\S+)';\D+eval([\s\S]*)\nif\(is_mobile/g;
+        const [_html,id,tm,sign,refer,ikanReg] = reg.exec(html);
+        let ikan = this.regIkan(ikanReg);
         //let playInfo = await this.getPlayerInfo(sina,id,tm,sign,refer,_Url);
         //console.log(playInfo)
-        let token = await this.getToken(id);
-        let url = await this.getKanKanPlayUri(id,token);
+        //let token = await this.getToken(id);
+        //let url = await this.getKanKanInfo(id,token);
         //alert(url)
         // let url = '';
         // let regSite = /site->(\S+)}{vid/g;
@@ -364,7 +373,7 @@ class SourceStore {
         const [Url,referUrl,type,name] = infoUrl.split('####');
         switch (type) {
             case 'kankan':
-                return await this.getKankan(Url);
+                return await this.getKankan(Url,referUrl);
                 break;
             case 'kan360':
                 return await this.getKan360(Url);
