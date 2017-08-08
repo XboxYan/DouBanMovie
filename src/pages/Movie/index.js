@@ -44,11 +44,11 @@ const CastItem = observer((props) => (
     <TouchableOpacity activeOpacity={.7} style={styles.castitem}>
         <View style={styles.castimgwrap}>
             {
-                (!props.item.avatars||props.DoubanisNull) && <Text style={styles.casttitle}>{props.DoubanisNull?props.item&&props.item[0]:props.item.name&&props.item.name[0]}</Text>
+                (!props.item.avatars || props.DoubanisNull) && <Text style={styles.casttitle}>{props.DoubanisNull ? props.item && props.item[0] : props.item.name && props.item.name[0]}</Text>
             }
             <Image resizeMode='cover' style={styles.castimg} source={{ uri: props.item.avatars ? props.item.avatars.medium : '...' }} />
         </View>
-        <Text numberOfLines={2} style={[styles.castname, props.director && { color: _.Color, fontStyle: 'italic' }, (props.DoubanisNull?props.item:props.item.name) && { marginTop: 10 }]}>{props.DoubanisNull?props.item:props.item.name}</Text>
+        <Text numberOfLines={2} style={[styles.castname, props.director && { color: _.Color, fontStyle: 'italic' }, (props.DoubanisNull ? props.item : props.item.name) && { marginTop: 10 }]}>{props.DoubanisNull ? props.item : props.item.name}</Text>
         {
             props.director && <Text style={[styles.director, { backgroundColor: _.Color }]}>导</Text>
         }
@@ -64,17 +64,17 @@ const TypeItem = observer((props) => (
 @observer
 class SourceItem extends PureComponent {
     getUrl = () => {
-        const { Source:{getUrl,currentIndex},index } = this.props;
-        if(currentIndex!=index){
+        const { Source: { getUrl, currentIndex }, index } = this.props;
+        if (currentIndex != index) {
             getUrl(index);
         }
     }
-    render (){
-        const { item,last,index,Source:{currentIndex} } = this.props;
+    render() {
+        const { item, last, index, Source: { currentIndex } } = this.props;
         return (
-            <TouchableOpacity onPress={this.getUrl} style={[styles.sourceitem,last&&{marginRight:30}]} activeOpacity={.7}>
-                <Text numberOfLines={2} style={styles.castname}>{item.name||' '}</Text>
-                <View style={[styles.sourcedot,{backgroundColor:_.Color},currentIndex===index&&{opacity:1}]} />
+            <TouchableOpacity onPress={this.getUrl} style={[styles.sourceitem, last && { marginRight: 30 }]} activeOpacity={.7}>
+                <Text numberOfLines={2} style={styles.castname}>{item.name || ' '}</Text>
+                <View style={[styles.sourcedot, { backgroundColor: _.Color }, currentIndex === index && { opacity: 1 }]} />
             </TouchableOpacity>
         )
     }
@@ -83,26 +83,26 @@ class SourceItem extends PureComponent {
 @observer
 class MovieSource extends PureComponent {
     renderItem = ({ item, index }) => {
-        return <SourceItem item={item} index={index} Source={this.props.Source} last={index===this.props.Source.sourceslen-1} />
+        return <SourceItem item={item} index={index} Source={this.props.Source} last={index === this.props.Source.sourceslen - 1} />
     }
-    render(){
-        const {Source} = this.props;
-        if(Source.sourceslen===0){
-            return <Text style={[styles.sourceitem,{width:50,marginLeft:15}]}>{' '}</Text>
+    render() {
+        const { Source } = this.props;
+        if (Source.sourceslen === 0) {
+            return <Text style={[styles.sourceitem, { width: 50, marginLeft: 15 }]}>{' '}</Text>
         }
         return (
-            <FlatList 
+            <FlatList
                 ref={(ref) => this.flatlist = ref}
                 style={styles.sourcelist}
                 showsHorizontalScrollIndicator={false}
                 horizontal={true}
-                initialNumToRender = {20}
+                initialNumToRender={20}
                 removeClippedSubviews={false}
                 data={[...Source.sources]}
-                keyExtractor={(item, index) => index+item.aid}
+                keyExtractor={(item, index) => index + item.aid}
                 renderItem={this.renderItem}
             />
-        ) 
+        )
     }
 }
 
@@ -117,7 +117,7 @@ class SourceStore {
     @observable
     playUrl = _Base;
 
-    constructor(movieId,sourceTypes,sources){
+    constructor(movieId, sourceTypes, sources) {
         this.movieId = movieId;
         this.sourceTypes = sourceTypes;
         this.sourceTypesLength = sourceTypes.length;
@@ -131,73 +131,77 @@ class SourceStore {
     movieIndex = new Array(this.sourceTypesLength).fill(0);
 
     @computed
-    get currentIndex(){
+    get currentIndex() {
         return this.movieIndex[this.selectedPosition];
     }
 
     @computed
-    get type(){
-        return this.sourceTypes[this.selectedPosition].type||'';
+    get type() {
+        return this.sourceTypes[this.selectedPosition].type || '';
     }
 
     @computed
-    get name(){
-        return this.sourceTypes[this.selectedPosition].name||'';
+    get name() {
+        return this.sourceTypes[this.selectedPosition].name || '';
     }
 
     @computed
-    get desc(){
-        return this.sourceTypes[this.selectedPosition].desc||'';
+    get desc() {
+        return this.sourceTypes[this.selectedPosition].desc || '';
     }
 
     @computed
-    get basePlayUrl(){
-        return this.sources[this.currentIndex].playUrl||'';
+    get basePlayUrl() {
+        return this.sources[this.currentIndex].playUrl || '';
     }
 
-    @observable 
+    @observable
     sources = [];
 
     @computed
-    get sourceslen(){
+    get sourceslen() {
         return this.sources.length;
     }
 
     @action
-    getLetv = async (Url,Referer) => {
-        return await fetch(Url,{headers:{
-            Referer:Referer
-        }})
-        .then((response) => {
-            if (response.ok) {
-                return response.url;
-            }
-        })
-        .catch((err) => {
-            console.warn(err)
-        })
+    getRealUrl = async (Url) => {
+        if (Url.includes('play.g3proxy.lecloud')) {
+            return await fetch(Url)
+                .then((response) => {
+                    if (response.ok) {
+                        return response.url;
+                    }
+                })
+                .catch((err) => {
+                    console.warn(err)
+                })
+        }else{
+            return Url
+        }
     }
 
     @action
-    getKanKanInfo = async (id,token) => {
-        return await fetch(`https://newplayer.lsmmr.com/parse.php?h5url=null&id=${id}&dysign=${token}&script=1`,{headers:{
-            Referer:'https://newplayer.dongyaodx.com'
-        }})
-        .then((response) => {
-            if (response.ok) {
-                let text = response.text();
-                if(text[0]){
-                    let reg = /\/\/\[parseArea\]([\s\S]*)\/\/\[\/parseArea\]/g;
-                    const [base,parseArea] = reg.exec(text);
-                    return parseArea;
-                }
-                return '';
+    getKanKanInfo = async (id, token) => {
+        return await fetch(`https://newplayer.lsmmr.com/parse.php?h5url=null&id=${id}&dysign=${token}&script=1`, {
+            headers: {
+                Referer: 'https://newplayer.dongyaodx.com'
             }
         })
-        .catch((err) => {
-            console.warn(err);
-            return '';
-        })
+            .then((response) => {
+                if (response.ok) {
+                    let text = response.text();
+                    if (text[0]) {
+                        let reg = /\/\/\[parseArea\]([\s\S]*)\/\/\[\/parseArea\]/g;
+                        const [base, parseArea] = reg.exec(text);
+                        return parseArea;
+                    }
+                    return '';
+                }
+            })
+            .catch((err) => {
+                console.warn(err);
+                return '';
+            })
     }
 
     @action
@@ -205,95 +209,117 @@ class SourceStore {
         let time = (new Date()).valueOf();
         //alert(`${_Base}token?_=${time}&id=${id}`)
         return await fetch(`${_Base}token?_=${time}&id=${id}`)
-        .then((response) => {
-            if (response.ok) {
-                return response.json();
-            }
-        })
-        .then((data) => {
-            ToastAndroid.show(data.token,ToastAndroid.SHORT);
-            return data.token;
-        })
-        .catch((err) => {
-            console.warn(err)
-        })
+            .then((response) => {
+                if (response.ok) {
+                    return response.json();
+                }
+            })
+            .then((data) => {
+                ToastAndroid.show(data.token, ToastAndroid.SHORT);
+                return data.token;
+            })
+            .catch((err) => {
+                console.warn(err)
+            })
     }
 
     @action
     getYouku = async (vid) => {
         let time = (new Date()).valueOf();
         return await fetch(`https://ups.youku.com/ups/get.json?vid=${vid}&ccode=0807&client_ip=192.168.1.1&utid=LU/3EVphOx8CAatxaNLcsS7F&client_ts=${time}`)
-        .then((response) => {
-            if (response.ok) {
-                return response.json();
-            }
-        })
-        .then((data) => {
-            return data.data.stream;
-        })
-        .catch((err) => {
-            console.warn(err)
-        })
+            .then((response) => {
+                if (response.ok) {
+                    return response.json();
+                }
+            })
+            .then((data) => {
+                return data.data.stream;
+            })
+            .catch((err) => {
+                console.warn(err)
+            })
     }
 
     @action
-    getMovieInfo = async (Url,referUrl) => {
-        return await fetch(Url,{headers:{
-            'Referer':referUrl,
-        }})
-        .then((response) => {
-            if (response.ok) {
-                return response.text();
+    getMovieInfo = async (Url, referUrl) => {
+        return await fetch(Url, {
+            headers: {
+                'Referer': 'http://www.kankanwu.com',
             }
         })
-        .catch((err) => {
-            console.log(err)
-        })
+            .then((response) => {
+                if (response.ok) {
+                    return response.text();
+                }
+            })
+            .catch((err) => {
+                console.log(err)
+            })
     }
 
     @action
-    getPlayerInfo = async (sina,id,tm,sign,userlink,refer) => {
+    getPlayerInfo = async (ikan, id, tm, sign, userlink) => {
 
         let time = (new Date()).valueOf();
-        let Url = `https://newplayer.dongyaodx.com/parse.php?h5url=null&id=${id}&tm=${tm}&sign=${sign}&script=1&userlink=${encodeURI(userlink)}&ikan=${sina}&_=${time}`;
-        console.log(Url)
-        return await fetch(Url,{headers:{
-            'Referer':refer
-        }})
-        .then((response) => {
-            if (response.ok) {
-                return response.text();
+        let Url = `https://newplayer.dongyaodx.com/parse.php?h5url=null&id=${id}&tm=${tm}&sign=${sign}&script=1&userlink=${userlink}&ikan=${ikan}&_=${time}`;
+        return await fetch(Url, {
+            headers: {
+                'Referer': 'https://newplayer.dongyaodx.com'
             }
         })
-        .catch((err) => {
-            console.log(err)
-        })
+            .then((response) => {
+                if (response.ok) {
+                    return response.text();
+                }
+            })
+            .catch((err) => {
+                console.log(err)
+            })
     }
 
     regIkan = (s) => {
         let ikan = eval(s);
         let reg = /([\s\S]*)eval/g
-        const [_html,ikan2] = reg.exec(ikan);
+        const [_html, ikan2] = reg.exec(ikan);
         eval(ikan2);
         return e1r.join('')
     }
 
+    regKankanUrl = (s) => {
+        let reg = /\/\/\[parseArea\]([\s\S]*)\/\/\[\/parseArea\]/g;
+        const [base, parseArea] = reg.exec(s);
+        //youku
+        if (parseArea.includes('youku')) {
+            alert('优酷资源')
+            //qq
+        } else if (parseArea.includes('qq')) {
+            alert('腾讯资源')
+        } else {
+            let reg = /vParse_Play\(([\s\S]*)\);/g
+            const [base, res] = reg.exec(parseArea);
+            let _res = eval('(' + res + ')');
+            return _res.urls[0].u;
+        }
+
+    }
+
     @action
-    getKankan = async (Url,referUrl) => {
+    getKankan = async (Url, referUrl) => {
         //const [base,id] = Url.split('id=');
         //let _referUrl = referUrl.replace(/www/g,'m');
         //let _Url = Url.replace(/.php/g,'1.php');
-        let html = await this.getMovieInfo(Url,referUrl);
+        let html = await this.getMovieInfo(Url, referUrl);
         //alert(html)
         //console.log(html)
         let reg = /urlplay1\D+'(\w+)';\D+tm\D+'(\d+)';\D+sign\D+'(\w+)';\D+refer\D+'(\S+)';\D+eval([\s\S]*)\nif\(is_mobile/g;
-        const [_html,id,tm,sign,refer,ikanReg] = reg.exec(html);
+        const [_html, id, tm, sign, refer, ikanReg] = reg.exec(html);
         let ikan = this.regIkan(ikanReg);
-        //let playInfo = await this.getPlayerInfo(sina,id,tm,sign,refer,_Url);
+        let playInfo = await this.getPlayerInfo(ikan, id, tm, sign, refer);
         //console.log(playInfo)
         //let token = await this.getToken(id);
         //let url = await this.getKanKanInfo(id,token);
-        //alert(url)
+        let url = this.regKankanUrl(playInfo);
+        let realUrl = await this.getRealUrl(url);
         // let url = '';
         // let regSite = /site->(\S+)}{vid/g;
         // let site = regSite.exec(xml);
@@ -308,7 +334,7 @@ class SourceStore {
         //     url = playlist[playlist.length-1]
         //     url = await this.getLetv(url,Url)
         // }
-        
+
         // switch (this.name) {
         //     case 'leyun':
         //     case 'letv':
@@ -327,53 +353,54 @@ class SourceStore {
         //         playlist = await this.getLetv(playlist,Url);
         //         break;
         // }
-        return url;
+        return realUrl;
     }
 
     @action
     getKan360Url = async (Url) => {
         return await fetch(`http://120.55.16.187/newmovie/btmovie/vparse?url=${Url}`)
-        .then(async (response) => {        
-            if (response.ok) {
-                return response.json();
-            }
-        })
-        .then((data) => {
-            return data.body.videoInfo[data.body.videoInfo.length-1].url;
-        })
-        .catch((err) => {
-            console.warn(err)
-        })
+            .then(async (response) => {
+                if (response.ok) {
+                    return response.json();
+                }
+            })
+            .then((data) => {
+                return data.body.videoInfo[0].url;
+            })
+            .catch((err) => {
+                console.warn(err)
+            })
     }
 
     @action
     getKan360 = async (Url) => {
         let playlist = await this.getKan360Url(Url);
-        playlist = await this.getLetv(playlist,Url);
+        playlist = await this.getRealUrl(playlist);
         return playlist
     }
 
     @action
     getInfos = async () => {
         return await fetch(this.basePlayUrl)
-        .then((response)=>{
-            if (response.ok) {
-                return response.headers.map
-            }
-        })
-        .catch((err) => {
-            console.warn(err)
-        })
+            .then((response) => {
+                if (response.ok) {
+                    return response.headers.map
+                }
+            })
+            .catch((err) => {
+                console.warn(err)
+            })
     }
 
     @action
     getMoviePlay = async (movieIndex) => {
         let headers = await this.getInfos();
-        const {jsurl:[jsUrl],infourl:[infoUrl]} = headers;
-        const [Url,referUrl,type,name] = infoUrl.split('####');
+        const { jsurl: [jsUrl], infourl: [infoUrl] } = headers;
+        alert(infoUrl)
+        const [Url, referUrl, type, name] = infoUrl.split('####');
         switch (type) {
             case 'kankan':
-                return await this.getKankan(Url,referUrl);
+                return await this.getKankan(Url, referUrl);
                 break;
             case 'kan360':
                 return await this.getKan360(Url);
@@ -399,18 +426,18 @@ class SourceStore {
                 break;
         }
         this.playUrl = playUrl;
-        ToastAndroid.show(this.type+playUrl,ToastAndroid.SHORT);
+        ToastAndroid.show(playUrl, ToastAndroid.SHORT);
     }
 
     @action
-    getSource = (value,position) => {
+    getSource = (value, position) => {
         this.selectedPosition = position;
         //this.sources = [{}];
         fetchData('videosource', {
             par: {
                 movieId: this.movieId,
-                type:this.type,
-                name:this.name
+                type: this.type,
+                name: this.name
             }
         },
             (data) => {
@@ -470,40 +497,40 @@ export default class MovieDetail extends PureComponent {
 
     @computed get type() {
         //return this.isRender ? this.data.type.replace(/(\s*$)/g, "").split(' ') : [''];
-        return this.DoubanisNull?(this.data.type.split(' ').filter((el)=>!!el)):this.Doubandata.genres;
+        return this.DoubanisNull ? (this.data.type.split(' ').filter((el) => !!el)) : this.Doubandata.genres;
         //return this.Doubandata.genres || [''];
     }
 
     @computed get sourceTypes() {
-        return this.data.sourceTypes||[{}];
+        return this.data.sourceTypes || [{}];
     }
 
     @computed get sources() {
-        return this.data.sources||[];
+        return this.data.sources || [];
     }
 
     @computed
-    get Source(){
-        return new SourceStore(this.movieId,this.sourceTypes,this.sources);
+    get Source() {
+        return new SourceStore(this.movieId, this.sourceTypes, this.sources);
     }
 
     @observable Doubandata = {};
 
     @computed get score() {
-        return this.DoubanisNull?this.data.score:(this.DoubanisRender?this.Doubandata.rating.average:0);
+        return this.DoubanisNull ? this.data.score : (this.DoubanisRender ? this.Doubandata.rating.average : 0);
         //return this.DoubanisRender?this.Doubandata.rating.average:0;
     }
 
     @computed get summary() {
-        return this.DoubanisNull?this.data.desc:this.Doubandata.summary;
+        return this.DoubanisNull ? this.data.desc : this.Doubandata.summary;
     }
 
     @computed get casts() {
-        return this.DoubanisNull?(this.data.actors?this.data.actors.split(' ').filter((el)=>!!el):['无数据']):this.Doubandata.casts;
+        return this.DoubanisNull ? (this.data.actors ? this.data.actors.split(' ').filter((el) => !!el) : ['无数据']) : this.Doubandata.casts;
     }
 
     @computed get directors() {
-        return this.DoubanisNull?['无数据']:this.Doubandata.directors||[''];
+        return this.DoubanisNull ? ['无数据'] : this.Doubandata.directors || [''];
     }
 
     @observable DoubanisRender = false;
@@ -525,8 +552,8 @@ export default class MovieDetail extends PureComponent {
         fetchData('video', {
             par: {
                 videoId: this.movieId,
-                st:'',
-                sn:''
+                st: '',
+                sn: ''
             }
         },
             (data) => {
@@ -534,10 +561,10 @@ export default class MovieDetail extends PureComponent {
                 this.isRender = true;
                 this.doubanId = data.body.doubanId;
                 LayoutAnimation.spring();
-                if(this.doubanId){
+                if (this.doubanId) {
                     this.getDoubanData();
                     this.getComments();
-                }else{
+                } else {
                     this.DoubanisNull = true;
                 }
             }
@@ -591,7 +618,7 @@ export default class MovieDetail extends PureComponent {
         this.scrollTop.setValue(e.nativeEvent.contentOffset.y);
     }
     play = () => {
-        const { getUrl,currentIndex } = this.Source;
+        const { getUrl, currentIndex } = this.Source;
         getUrl(currentIndex);
     }
     expand = () => {
@@ -669,15 +696,15 @@ export default class MovieDetail extends PureComponent {
                             <Text style={styles.subtitle}>{this.updateDate} 更新</Text>
                             <View style={styles.sourceType}>
                                 <Text style={styles.pickertitle}>来源 / </Text>
-                                <Text style={[styles.pickertitle,{color: _.Color}]}>{this.Source.desc}</Text>
+                                <Text style={[styles.pickertitle, { color: _.Color }]}>{this.Source.desc}</Text>
                                 <Icon name='expand-more' size={20} color={_.Color} />
-                                <Picker 
-                                    style={styles.picker} 
-                                    selectedValue={'pos'+this.Source.selectedPosition}
+                                <Picker
+                                    style={styles.picker}
+                                    selectedValue={'pos' + this.Source.selectedPosition}
                                     onValueChange={this.Source.getSource}
                                     mode='dropdown'>
                                     {
-                                        this.Source.sourceTypes.map((el,i)=><Picker.Item color={'#666'} key={i} label={el.desc+el.type||''} value={'pos'+i} />)
+                                        this.Source.sourceTypes.map((el, i) => <Picker.Item color={'#666'} key={i} label={el.desc + el.type || ''} value={'pos' + i} />)
                                     }
                                 </Picker>
                             </View>
@@ -688,8 +715,8 @@ export default class MovieDetail extends PureComponent {
                         </View>
                     </View>
                     <View style={styles.viewcon}>
-                        <Video 
-                            source={{uri: this.Source.playUrl}}
+                        <Video
+                            source={{ uri: this.Source.playUrl }}
                             style={styles.backgroundVideo}
                             resizeMode="contain"
                             controls={true}
@@ -710,7 +737,7 @@ export default class MovieDetail extends PureComponent {
                                 ))
                             }
                             {
-                                (this.DoubanisRender||this.DoubanisNull) && this.casts.map((el, i) => (
+                                (this.DoubanisRender || this.DoubanisNull) && this.casts.map((el, i) => (
                                     <CastItem DoubanisNull={this.DoubanisNull} key={i} item={el} />
                                 ))
                             }
@@ -719,7 +746,7 @@ export default class MovieDetail extends PureComponent {
                     <View style={styles.viewcon}>
                         <SortTitle title='剧情介绍'>
                             {
-                                (this.DoubanisRender||this.DoubanisNull) &&
+                                (this.DoubanisRender || this.DoubanisNull) &&
                                 <TouchableOpacity
                                     onPress={this.expand}
                                     style={styles.view_more}
@@ -731,7 +758,7 @@ export default class MovieDetail extends PureComponent {
                         </SortTitle>
                         <View style={styles.con}>
                             {
-                                (this.DoubanisRender||this.DoubanisNull)
+                                (this.DoubanisRender || this.DoubanisNull)
                                     ?
                                     <Text numberOfLines={this.isMore ? 0 : 5} style={styles.text}>{this.summary}</Text>
                                     :
@@ -740,7 +767,7 @@ export default class MovieDetail extends PureComponent {
                         </View>
                         <View style={styles.con}>
                             {
-                                (this.DoubanisRender||this.DoubanisNull) && this.type.map((el, i) => (
+                                (this.DoubanisRender || this.DoubanisNull) && this.type.map((el, i) => (
                                     <TypeItem key={i} item={el} />
                                 ))
                             }
@@ -749,10 +776,10 @@ export default class MovieDetail extends PureComponent {
                     <View style={styles.viewcon}>
                         <SortTitle title={`热评(${this.CommentTotal})`} />
                         <View style={styles.con}>
-                            <CommentList isRender={this.CommentisRender||this.DoubanisNull} data={this.CommentList} />
+                            <CommentList isRender={this.CommentisRender || this.DoubanisNull} data={this.CommentList} />
                         </View>
                         {
-                            this.CommentisRender&&
+                            this.CommentisRender &&
                             <Touchable
                                 onPress={() => navigation.navigate('Comment', { id: this.doubanId, total: this.CommentTotal })}
                                 style={styles.commentbtn}>
@@ -992,52 +1019,52 @@ const styles = StyleSheet.create({
         fontSize: 13,
         color: '#999'
     },
-    sourcelist:{
-        paddingHorizontal:15
+    sourcelist: {
+        paddingHorizontal: 15
     },
-    sourceitem:{
-        backgroundColor:'#f1f1f1',
+    sourceitem: {
+        backgroundColor: '#f1f1f1',
         minWidth: 50,
-        maxWidth:150,
+        maxWidth: 150,
         borderBottomRightRadius: 10,
         borderTopLeftRadius: 10,
         justifyContent: 'center',
         marginVertical: 5,
-        marginRight:10,
+        marginRight: 10,
         padding: 10,
-        overflow:'hidden',
+        overflow: 'hidden',
         alignItems: 'center',
     },
-    sourceType:{
-        paddingTop:3,
-        flexDirection:'row',
-        alignSelf:'stretch',
-        alignItems:'center'
+    sourceType: {
+        paddingTop: 3,
+        flexDirection: 'row',
+        alignSelf: 'stretch',
+        alignItems: 'center'
     },
-    pickertitle:{
+    pickertitle: {
         fontSize: 14,
         color: '#666',
     },
-    picker:{
-        width:120,
-        height:30,
-        left:30,
-        padding:0,
-        opacity:0,
-        position:'absolute'
+    picker: {
+        width: 120,
+        height: 30,
+        left: 30,
+        padding: 0,
+        opacity: 0,
+        position: 'absolute'
     },
-    backgroundVideo:{
-        height:200,
-        backgroundColor:'#000',
-        marginHorizontal:10,
+    backgroundVideo: {
+        height: 200,
+        backgroundColor: '#000',
+        marginHorizontal: 10,
     },
-    sourcedot:{
-        position:'absolute',
-        right:4,
-        top:4,
-        width:5,
-        height:5,
-        borderRadius:5,
-        opacity:0
+    sourcedot: {
+        position: 'absolute',
+        right: 4,
+        top: 4,
+        width: 5,
+        height: 5,
+        borderRadius: 5,
+        opacity: 0
     }
 })
