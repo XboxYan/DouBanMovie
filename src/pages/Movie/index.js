@@ -224,23 +224,6 @@ class SourceStore {
     }
 
     @action
-    getYouku = async (vid) => {
-        let time = (new Date()).valueOf();
-        return await fetch(`https://ups.youku.com/ups/get.json?vid=${vid}&ccode=0807&client_ip=192.168.1.1&utid=LU/3EVphOx8CAatxaNLcsS7F&client_ts=${time}`)
-            .then((response) => {
-                if (response.ok) {
-                    return response.json();
-                }
-            })
-            .then((data) => {
-                return data.data.stream;
-            })
-            .catch((err) => {
-                console.warn(err)
-            })
-    }
-
-    @action
     getMovieInfo = async (Url, referUrl) => {
         return await fetch(Url, {
             headers: {
@@ -280,6 +263,7 @@ class SourceStore {
             })
     }
 
+    @action
     regIkan = (s) => {
         let ikan = eval(s);
         let reg = /([\s\S]*)eval/g
@@ -288,17 +272,62 @@ class SourceStore {
         return e1r.join('');
     }
 
-    regKankanUrl = (s) => {
+    @action
+    getYouku = async (params) => {
+        let time = (new Date()).valueOf();
+        let {vid,ccode} = params;
+        return await fetch(`https://ups.youku.com/ups/get.json?vid=${vid}&ccode=${ccode}&client_ip=192.168.1.1&utid=cAlRDrkhxlcCAbdecTFBOi1U&client_ts=${time}`)
+            .then((response) => {
+                if (response.ok) {
+                    return response.json();
+                }
+            })
+            .then((data) => {
+                return data.data.stream[data.data.stream.length-1].m3u8_url;
+            })
+            .catch((err) => {
+                console.warn(err)
+            })
+    }
+
+    @action
+    getQQ = async (params) => {
+        let Url = "https://h5vv.video.qq.com/getinfo?callback=?&charge=0&vid=" + params.vid + "&defaultfmt=auto&otype=json&guid=" + params.guid + "&platform=" + params.platform + "&defnpayver=1&appVer=" + params.appver + "&sdtfrom=v1010&host=v.qq.com&ehost=" + encodeURIComponent(params.pageUrl) + "&_rnd=" + params.rnd + "&defn=" + params.fmt + "&fhdswitch=0&show1080p=1&" + (params.dltype == 3 ? "isHLS=1&dtype=3&sphls=1": "isHLS=0") + "&newplatform=" + params.platform + "&defsrc=1&_qv_rmt=" + params.q1 + "&_qv_rmt2=" + params.q2;
+        return await fetch(Url)
+            .then((response) => {
+                if (response.ok) {
+                    return response.json();
+                }
+            })
+            .then((g)=> {
+                let firstUrl = g.vl.vi[0].ul.ui[uidx].url + params.filename.split("|")[0] + "?sdtfrom=v1010&guid=" + params.guid + "&vkey=" + g.vl.vi[0].fvkey;
+                return firstUrl;
+            })
+            .catch((err) => {
+                console.warn(err)
+            })
+    }
+
+    @action
+    regKankanUrl = async (s) => {
         let reg = /\/\/\[parseArea\]([\s\S]*)\/\/\[\/parseArea\]/g;
         const [base, parseArea] = reg.exec(s);
-        //youku
         if (parseArea.includes('youku')) {
-            alert('优酷资源')
-            return '';
-            //qq
+            //youku
+            let reg = /params\=([\s\S]*);[\s\S]*vParser\=/g
+            const [base, res] = reg.exec(parseArea);
+            let params = JSON.parse(res);
+            let url = await this.getYouku(params);
+            return url;
         } else if (parseArea.includes('qq')) {
-            alert('腾讯资源')
-            return '';
+            //qq
+            let reg = /params\=([\s\S]*);[\s\S]*vParser\=/g
+            const [base, res] = reg.exec(parseArea);
+            let params = JSON.parse(res);
+            let url = await this.getQQ(params);
+            return url;
+        } else if (parseArea.includes('vParse_Error')) {
+            return '解析失败'
         } else {
             let reg = /vParse_Play\(([\s\S]*)\);/g
             const [base, res] = reg.exec(parseArea);
@@ -319,11 +348,12 @@ class SourceStore {
         let reg = /urlplay1\D+'(\w+)';\D+tm\D+'(\d+)';\D+sign\D+'(\w+)';\D+refer\D+'(\S+)';\D+eval([\s\S]*)\nif\(is_mobile\D+getScript\(([\s\S]*)\+document[\s\S]*flashvars/g;
         const [_html, id, tm, sign, refer, ikanReg, getUrl] = reg.exec(html);
         let ikan = this.regIkan(ikanReg);
+        alert(ikan)
         let playInfo = await this.getPlayerInfo(ikan, id, tm, sign, refer, getUrl);
         //alert(html)
         //let token = await this.getToken(id);
         //let url = await this.getKanKanInfo(id,token);
-        let url = this.regKankanUrl(playInfo);
+        let url = await this.regKankanUrl(playInfo);
         let realUrl = await this.getRealUrl(url);
         // let url = '';
         // let regSite = /site->(\S+)}{vid/g;
