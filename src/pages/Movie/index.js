@@ -164,8 +164,8 @@ class SourceStore {
     }
 
     @action
-    getRealUrl = async (Url) => {
-        if (Url.includes('play.g3proxy.lecloud')) {
+    getRealUrl = async (Url,isKan360=false) => {
+        if (Url.includes('play.g3proxy.lecloud')||isKan360) {
             return await fetch(Url)
                 .then((response) => {
                     if (response.ok) {
@@ -244,7 +244,7 @@ class SourceStore {
     getMovieInfo = async (Url, referUrl) => {
         return await fetch(Url, {
             headers: {
-                'Referer': 'http://www.kankanwu.com',
+                'Referer': 'http://m.kankanwu.com',
             }
         })
             .then((response) => {
@@ -258,13 +258,16 @@ class SourceStore {
     }
 
     @action
-    getPlayerInfo = async (ikan, id, tm, sign, userlink) => {
-
+    getPlayerInfo = async (ikan, urlplay1, tm, sign, refer, getUrl) => {
+        let base = 'https://newplayer.dongyaodx.com/';
         let time = (new Date()).valueOf();
-        let Url = `https://newplayer.dongyaodx.com/parse.php?h5url=null&id=${id}&tm=${tm}&sign=${sign}&script=1&userlink=${userlink}&ikan=${ikan}&_=${time}`;
+        //let Url = 'https://newplayer.dongyaodx.com/'+eval(getUrl)+`${ikan}&_=${time}`;
+        let Url = base+eval(getUrl)+`${ikan}&_=${time}`;
+        //alert(Url)
+        //let Url = `https://newplayer.dongyaodx.com/parse.php?h5url=null&id=${id}&tm=${tm}&sign=${sign}&script=1&userlink=${userlink}&zhu77=${ikan}&_=${time}`;
         return await fetch(Url, {
             headers: {
-                'Referer': 'https://newplayer.dongyaodx.com'
+                'Referer': base
             }
         })
             .then((response) => {
@@ -282,7 +285,7 @@ class SourceStore {
         let reg = /([\s\S]*)eval/g
         const [_html, ikan2] = reg.exec(ikan);
         eval(ikan2);
-        return e1r.join('')
+        return e1r.join('');
     }
 
     regKankanUrl = (s) => {
@@ -291,9 +294,11 @@ class SourceStore {
         //youku
         if (parseArea.includes('youku')) {
             alert('优酷资源')
+            return '';
             //qq
         } else if (parseArea.includes('qq')) {
             alert('腾讯资源')
+            return '';
         } else {
             let reg = /vParse_Play\(([\s\S]*)\);/g
             const [base, res] = reg.exec(parseArea);
@@ -311,11 +316,11 @@ class SourceStore {
         let html = await this.getMovieInfo(Url, referUrl);
         //alert(html)
         //console.log(html)
-        let reg = /urlplay1\D+'(\w+)';\D+tm\D+'(\d+)';\D+sign\D+'(\w+)';\D+refer\D+'(\S+)';\D+eval([\s\S]*)\nif\(is_mobile/g;
-        const [_html, id, tm, sign, refer, ikanReg] = reg.exec(html);
+        let reg = /urlplay1\D+'(\w+)';\D+tm\D+'(\d+)';\D+sign\D+'(\w+)';\D+refer\D+'(\S+)';\D+eval([\s\S]*)\nif\(is_mobile\D+getScript\(([\s\S]*)\+document[\s\S]*flashvars/g;
+        const [_html, id, tm, sign, refer, ikanReg, getUrl] = reg.exec(html);
         let ikan = this.regIkan(ikanReg);
-        let playInfo = await this.getPlayerInfo(ikan, id, tm, sign, refer);
-        //console.log(playInfo)
+        let playInfo = await this.getPlayerInfo(ikan, id, tm, sign, refer, getUrl);
+        //alert(html)
         //let token = await this.getToken(id);
         //let url = await this.getKanKanInfo(id,token);
         let url = this.regKankanUrl(playInfo);
@@ -365,7 +370,8 @@ class SourceStore {
                 }
             })
             .then((data) => {
-                return data.body.videoInfo[0].url;
+                //alert(JSON.stringify(data.body))
+                return data.body.videoInfo[data.body.videoInfo.length-1].url;
             })
             .catch((err) => {
                 console.warn(err)
@@ -375,8 +381,8 @@ class SourceStore {
     @action
     getKan360 = async (Url) => {
         let playlist = await this.getKan360Url(Url);
-        playlist = await this.getRealUrl(playlist);
-        return playlist
+        let realUrl = await this.getRealUrl(playlist,true);
+        return realUrl;
     }
 
     @action
@@ -393,14 +399,14 @@ class SourceStore {
     }
 
     @action
-    getMoviePlay = async (movieIndex) => {
+    getMoviePlay = async () => {
         let headers = await this.getInfos();
         const { jsurl: [jsUrl], infourl: [infoUrl] } = headers;
-        alert(infoUrl)
+        //ToastAndroid.show(infoUrl, ToastAndroid.SHORT);
         const [Url, referUrl, type, name] = infoUrl.split('####');
         switch (type) {
             case 'kankan':
-                return await this.getKankan(Url, referUrl);
+                return await this.getKankan(Url);
                 break;
             case 'kan360':
                 return await this.getKan360(Url);
@@ -417,7 +423,7 @@ class SourceStore {
         switch (this.type) {
             case 'kankan':
             case 'kan360':
-                playUrl = await this.getMoviePlay(movieIndex);
+                playUrl = await this.getMoviePlay();
                 break;
             case 'btpan':
                 playUrl = this.basePlayUrl;

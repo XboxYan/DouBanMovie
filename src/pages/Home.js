@@ -80,7 +80,7 @@ export default class Home extends PureComponent {
     getHot = () => {
         fetchData('hotPlay', {
             par: {
-                type: 0
+                type: 3
             }
         },
             (data) => {
