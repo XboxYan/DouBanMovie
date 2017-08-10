@@ -288,9 +288,9 @@ class SourceStore {
     @action
     //获取优酷utid
     getUtid = async () => {
-        return await fetch('https://log.mmstat.com/eg.js',{
-            headers:{
-                'User-Agent': 'Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.90 Mobile Safari/537.36'                
+        return await fetch('https://log.mmstat.com/eg.js', {
+            headers: {
+                'User-Agent': 'Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.90 Mobile Safari/537.36'
             }
         })
             .then((response) => {
@@ -298,7 +298,7 @@ class SourceStore {
                     return response.text();
                 }
             })
-            .then((response)=>{
+            .then((response) => {
                 let reg = /Etag\=([\s\S]*);goldlog/g
                 const [_html, utid] = reg.exec(response);
                 return utid;
@@ -328,18 +328,62 @@ class SourceStore {
     }
 
     @action
-    getQQ = async (params) => {
-        let Url = "https://h5vv.video.qq.com/getinfo?callback=&charge=0&vid=" + params.vid + "&defaultfmt=auto&otype=json&guid=" + params.guid + "&platform=" + params.platform + "&defnpayver=1&appVer=" + params.appver + "&sdtfrom=v1010&host=v.qq.com&ehost=" + encodeURIComponent(params.pageUrl) + "&_rnd=" + params.rnd + "&defn=" + params.fmt + "&fhdswitch=0&show1080p=1&" + (params.dltype == 3 ? "isHLS=1&dtype=3&sphls=1" : "isHLS=0") + "&newplatform=" + params.platform + "&defsrc=1&_qv_rmt=" + params.q1 + "&_qv_rmt2=" + params.q2;
+    getQQKey = async (params) => {
+        var qstr = {
+                charge: 0,
+                vid: params.vid,
+                filename: "",
+                format: params.format,
+                otype: "json",
+                guid: params.guid,
+                platform: params.platform,
+                defnpayver: 0,
+                appVer: params.appver,
+                vt: params.vt,
+                sdtfrom: "v1010",
+                _rnd: params.rnd,
+                _qv_rmt: params.q1,
+                _qv_rmt2: params.q2
+            };
+        let Url = "https://h5vv.video.qq.com/getkey?callback=callback&charge=0&vid=" + params.vid + "&filename=" + params.filename.split("|")[0] + "&format=" + params.format + "&otype=json&guid=" + params.guid + "&platform=10901&defnpayver=0&appVer=" + params.appver + "&vt=" + params.vt + "&sdtfrom=v1010&_rnd=" + params.rnd + "&_qv_rmt=" + params.q1 + "&_qv_rmt2=" + params.q2;
+        //alert(Url)
         return await fetch(Url)
             .then((response) => {
-                alert(JSON.stringify(response))
                 if (response.ok) {
-                    return response.json();
+                    return response.text()
                 }
             })
-            .then((g) => {
-                
-                let firstUrl = g.vl.vi[0].ul.ui[uidx].url + params.filename.split("|")[0] + "?sdtfrom=v1010&guid=" + params.guid + "&vkey=" + g.vl.vi[0].fvkey;
+            .then((d) => {
+                callback = a => a;
+                let g = eval(d);
+                return g.key;
+            })
+            .catch((err) => {
+                console.warn(err)
+            })
+    }
+
+    @action
+    getQQ = async (params) => {
+        let Url = "https://h5vv.video.qq.com/getinfo?callback=callback&charge=0&vid=" + params.vid + "&defaultfmt=auto&otype=json&guid=" + params.guid + "&platform=" + params.platform + "&defnpayver=1&appVer=" + params.appver + "&sdtfrom=v1010&host=v.qq.com&ehost=" + encodeURIComponent(params.pageUrl) + "&_rnd=" + params.rnd + "&defn=" + params.fmt + "&fhdswitch=0&show1080p=1&" + (params.dltype == 3 ? "isHLS=1&dtype=3&sphls=1" : "isHLS=0") + "&newplatform=" + params.platform + "&defsrc=1&_qv_rmt=" + params.q1 + "&_qv_rmt2=" + params.q2;
+        let key = await this.getQQKey(params);
+        return await fetch(Url)
+            .then((response) => {
+                if (response.ok) {
+                    return response.text()
+                }
+            })
+            .then((d) => {
+                callback = a => a;
+                let g = eval(d);
+                uidx = 0;
+                for (var uix in g.vl.vi[0].ul.ui) {
+                    if (!/\d+\.\d+\.\d+\.\d+/.test(g.vl.vi[0].ul.ui[uix].url) && 1 + 1 == 3) {
+                        uidx = uix;
+                        break;
+                    };
+                };
+                let firstUrl = g.vl.vi[0].ul.ui[uidx].url + params.filename.split("|")[0] + "?sdtfrom=v1010&guid=" + params.guid + "&vkey=" + key;
                 return firstUrl;
             })
             .catch((err) => {
@@ -362,7 +406,7 @@ class SourceStore {
             //qq
             let reg = /params\=([\s\S]*);[\s\S]*vParser\=/g
             const [base, res] = reg.exec(parseArea);
-            
+
             let params = eval('(' + res + ')');
             //alert(JSON.stringify(params))
             let url = await this.getQQ(params);
