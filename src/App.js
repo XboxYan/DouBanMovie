@@ -9,6 +9,7 @@ import Me from './pages/Me';
 import MovieDetail from './pages/Movie/index';
 import MovieMore from './pages/Movie/MovieMore';
 import Comment from './pages/Movie/Comment';
+import Search from './pages/Movie/Search';
 
 //TabNavigatorConfig
 const TabNavigatorConfig = {
@@ -52,6 +53,7 @@ const StackNavigatorConfig = {
 //StackNavigator
 const MainApp = StackNavigator({
     Root: { screen: Root,path:'home/root' },
+    Search:{ screen: Search },
     MovieMore:{ screen: MovieMore },
     MovieDetail:{ 
         screen: MovieDetail,

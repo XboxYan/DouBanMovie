@@ -22,16 +22,19 @@ export default class AppTop extends PureComponent {
 		},2000)
 	}
 
+	goSearch = () => {
+		this.props.navigation.navigate('Search');
+	}
+
 	render() {
 		const { title } = this.props;
 		return (
 			<View style={[styles.apptop,{backgroundColor:_.Color}]}>
-				<Shadow />
 				<Text style={styles.title}>{title}</Text>
 				<Touchable style={styles.ico}>
 					<Icon name='schedule' size={20} color='#fff' />
 				</Touchable>
-				<Touchable style={styles.ico}>
+				<Touchable onPress={this.goSearch} style={styles.ico}>
 					<Icon name='search' size={24} color='#fff' />
 				</Touchable>
 			</View>

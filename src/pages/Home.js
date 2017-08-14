@@ -148,14 +148,14 @@ export default class Home extends PureComponent {
         const { navigation } = this.props;
         return (
             <View style={styles.content}>
-                <AppTop title='推荐' />
+                <AppTop title='推荐' navigation={navigation} />
                 {
                     this.isRender ?
                     <SectionList
                         ListHeaderComponent={this.renderHeader}
                         initialNumToRender={1}
                         renderItem={({ item }) => <MovieList data={item} navigation={navigation} />}
-                        stickySectionHeadersEnabled={true}
+                        //stickySectionHeadersEnabled={true}
                         renderSectionHeader={({ section }) => <MovieTitle title={section.title} navigation={navigation} />}
                         keyExtractor={(item, index) => "item" + index}
                         //enableVirtualization={true}
@@ -183,7 +183,7 @@ const styles = StyleSheet.create({
         backgroundColor: '#fff'
     },
     line: {
-        height: 16,
+        height: 15,
         width: 3,
         marginRight: 10,
     },

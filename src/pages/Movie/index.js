@@ -12,6 +12,7 @@ import {
     UIManager,
     TouchableOpacity,
     FlatList,
+    BackHandler,
     ToastAndroid,
     Animated,
     Image,
@@ -558,10 +559,6 @@ export default class MovieDetail extends PureComponent {
         return this.data.updateDate;
     }
 
-    @computed get img() {
-        return this.isRender ? this.data.img : '...';
-    }
-
     @computed get release() {
         return this.data.release;
     }
@@ -610,6 +607,10 @@ export default class MovieDetail extends PureComponent {
 
     @computed get directors() {
         return this.DoubanisNull ? ['无数据'] : this.Doubandata.directors || [''];
+    }
+
+    @computed get img() {
+        return this.DoubanisNull ? this.data.img : (this.DoubanisRender ?this.Doubandata.images.large:'...');
     }
 
     @observable DoubanisRender = false;
@@ -680,10 +681,18 @@ export default class MovieDetail extends PureComponent {
             }
         )
     }
+    onBackAndroid = () => {
+        this.props.navigation.goBack();
+        return true
+    }
     componentDidMount() {
+        BackHandler.addEventListener('hardwareBackPress', this.onBackAndroid);
         const { params: { movieId } } = this.props.navigation.state;
         this.movieId = movieId;
         this.getData();
+    }
+    componentWillUnmount() {
+        BackHandler.removeEventListener('hardwareBackPress', this.onBackAndroid); 
     }
     goBack = () => {
         const { navigation } = this.props;

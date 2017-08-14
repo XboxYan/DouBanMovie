@@ -24,14 +24,14 @@ const API = {
     //获取影片详情（豆瓣）
     douban_subject:({id=''}) => `https://api.douban.com/v2/movie/subject/${id}`,
     //搜索
-    search:({keywords=''}) => `${Base}videos?keywords=${keywords}`,
+    search:({keywords='',page=1,pageSize=20}) => `${Base}videos?keywords=${keywords}&page=${page}&pageSize=${pageSize}`,
     //评论
     get_comments:({id='',start=0,count=5}) => `https://frodo.douban.com/api/v2/movie/${id}/interests?start=${start}&count=${count}&order_by=latest`,
     //热门
     hotPlay:({type=0}) => `${Base}hotPlay?type=${type}`,
 }
 
-const fetchData = (url,{headers={'appVersion': appVersion,'xigua':true},par = {} } = {},success,error=(err)=>{console.warn(err)}) => {
+const fetchData = (url,{headers={'appVersion': appVersion},par = {} } = {},success,error=(err)=>{console.warn(err)}) => {
     const URL = API[url](par);
     fetch(URL, {
         method: 'GET',
