@@ -65,8 +65,9 @@ const TypeItem = observer((props) => (
 @observer
 class SourceItem extends PureComponent {
     getUrl = () => {
-        const { Source: { getUrl, currentIndex }, index } = this.props;
+        const { Source: { getUrl, currentIndex }, index, onplayRotate } = this.props;
         if (currentIndex != index) {
+            onplayRotate(true);
             getUrl(index);
         }
     }
@@ -84,7 +85,7 @@ class SourceItem extends PureComponent {
 @observer
 class MovieSource extends PureComponent {
     renderItem = ({ item, index }) => {
-        return <SourceItem item={item} index={index} Source={this.props.Source} last={index === this.props.Source.sourceslen - 1} />
+        return <SourceItem item={item} index={index} Source={this.props.Source} onplayRotate={this.props.onplayRotate} last={index === this.props.Source.sourceslen - 1} />
     }
     render() {
         const { Source } = this.props;
@@ -116,7 +117,7 @@ class SourceStore {
     movieId = '';
 
     @observable
-    playUrl = _Base;
+    playUrl = '';
 
     constructor(movieId, sourceTypes, sources) {
         this.movieId = movieId;
@@ -225,10 +226,10 @@ class SourceStore {
     }
 
     @action
-    getMovieInfo = async (Url) => {
+    getMovieInfo = async (Url,referUrl) => {
         return await fetch(Url, {
             headers: {
-                'Referer': 'http://m.kankanwu.com',
+                'Referer': referUrl,
             }
         })
             .then((response) => {
@@ -331,21 +332,21 @@ class SourceStore {
     @action
     getQQKey = async (params) => {
         var qstr = {
-                charge: 0,
-                vid: params.vid,
-                filename: "",
-                format: params.format,
-                otype: "json",
-                guid: params.guid,
-                platform: params.platform,
-                defnpayver: 0,
-                appVer: params.appver,
-                vt: params.vt,
-                sdtfrom: "v1010",
-                _rnd: params.rnd,
-                _qv_rmt: params.q1,
-                _qv_rmt2: params.q2
-            };
+            charge: 0,
+            vid: params.vid,
+            filename: "",
+            format: params.format,
+            otype: "json",
+            guid: params.guid,
+            platform: params.platform,
+            defnpayver: 0,
+            appVer: params.appver,
+            vt: params.vt,
+            sdtfrom: "v1010",
+            _rnd: params.rnd,
+            _qv_rmt: params.q1,
+            _qv_rmt2: params.q2
+        };
         let Url = "https://h5vv.video.qq.com/getkey?callback=callback&charge=0&vid=" + params.vid + "&filename=" + params.filename.split("|")[0] + "&format=" + params.format + "&otype=json&guid=" + params.guid + "&platform=10901&defnpayver=0&appVer=" + params.appver + "&vt=" + params.vt + "&sdtfrom=v1010&_rnd=" + params.rnd + "&_qv_rmt=" + params.q1 + "&_qv_rmt2=" + params.q2;
         //alert(Url)
         return await fetch(Url)
@@ -424,8 +425,9 @@ class SourceStore {
     }
 
     @action
-    getKankan = async (Url) => {
-        let html = await this.getMovieInfo(Url);
+    getKankan = async (Url,referUrl) => {
+        let html = await this.getMovieInfo(Url,referUrl);
+        //alert(html)
         //let reg = /urlplay1\D+'(\w+)';\D+tm\D+'(\d+)';\D+sign\D+'(\w+)';\D+refer\D+'(\S+)';\D+eval([\s\S]*)\nif\(is_mobile\D+getScript\(([\s\S]*)\);\n}/g;
         let reg = /eval([\s\S]*)\nif\(is_mobile[\s\S]*xmlurl([\s\S]*)\+'}',/g;
         const [_html, ikanReg, getUrl] = reg.exec(html);
@@ -478,9 +480,10 @@ class SourceStore {
         const { jsurl: [jsUrl], infourl: [infoUrl] } = headers;
         //ToastAndroid.show(infoUrl, ToastAndroid.SHORT);
         const [Url, referUrl, type, name] = infoUrl.split('####');
+        alert(infoUrl)
         switch (type) {
             case 'kankan':
-                return await this.getKankan(Url);
+                return await this.getKankan(Url,referUrl);
                 break;
             case 'kan360':
                 return await this.getKan360(Url);
@@ -539,7 +542,11 @@ export default class MovieDetail extends PureComponent {
 
     scrollTop = new Animated.Value(0);
 
+    scrollRotate = new Animated.Value(0);
+
     @observable movieId = '';
+
+    @observable paused = true;
 
     doubanId = null;
 
@@ -610,7 +617,7 @@ export default class MovieDetail extends PureComponent {
     }
 
     @computed get img() {
-        return this.DoubanisNull ? this.data.img : (this.DoubanisRender ?this.Doubandata.images.large:'...');
+        return this.DoubanisNull ? this.data.img : (this.DoubanisRender ? this.Doubandata.images.large : '...');
     }
 
     @observable DoubanisRender = false;
@@ -688,7 +695,7 @@ export default class MovieDetail extends PureComponent {
         this.getData();
     }
     componentWillUnmount() {
-        BackHandler.removeEventListener('hardwareBackPress', this.goBack); 
+        BackHandler.removeEventListener('hardwareBackPress', this.goBack);
     }
     goBack = () => {
         const { navigation } = this.props;
@@ -699,12 +706,31 @@ export default class MovieDetail extends PureComponent {
         this.scrollTop.setValue(e.nativeEvent.contentOffset.y);
     }
     play = () => {
-        const { getUrl, currentIndex } = this.Source;
-        getUrl(currentIndex);
+        this.onplayRotate(true);
+        if(this.Source.playUrl===''){
+            const { getUrl, currentIndex } = this.Source;
+            getUrl(currentIndex);
+        }     
     }
     expand = () => {
         LayoutAnimation.spring();
         this.isMore = !this.isMore;
+    }
+
+    @action
+    onplayRotate = (value) => {
+        Animated.timing(
+            this.scrollRotate,
+            {
+                toValue: value?1:0,
+            }                              
+        ).start();
+        LayoutAnimation.easeInEaseOut();
+        this.paused = !value;
+    }
+
+    onClose = () => {
+        this.onplayRotate(false);
     }
     render() {
         const { navigation } = this.props;
@@ -765,49 +791,68 @@ export default class MovieDetail extends PureComponent {
                                 })
                             }]
                         }]} />
-                    <View style={[styles.viewcon, styles.row, { marginTop: $.STATUS_HEIGHT + 50 }]}>
-                        <View style={styles.poster}><Image source={{ uri: this.img }} style={[styles.fullcon, styles.borR]} /></View>
-                        <View style={styles.postertext}>
-                            <Text style={[styles.title, { color: _.Color }]}>{this.name}</Text>
-                            <Star style={styles.score} score={this.score} />
-                            {
-                                this.status && <Text style={styles.status}>{this.status}</Text>
-                            }
-                            <Text style={styles.subtitle}>{this.area} / {this.release}</Text>
-                            <Text style={styles.subtitle}>{this.updateDate} 更新</Text>
-                            <View style={styles.sourceType}>
-                                <Text style={styles.pickertitle}>来源 / </Text>
-                                <Text style={[styles.pickertitle, { color: _.Color }]}>{this.Source.desc}</Text>
-                                <Icon name='expand-more' size={20} color={_.Color} />
-                                <Picker
-                                    style={styles.picker}
-                                    selectedValue={'pos' + this.Source.selectedPosition}
-                                    onValueChange={this.Source.getSource}
-                                    mode='dropdown'>
-                                    {
-                                        this.Source.sourceTypes.map((el, i) => <Picker.Item color={'#666'} key={i} label={el.desc + el.type || ''} value={'pos' + i} />)
-                                    }
-                                </Picker>
+                    <Animated.View style={[styles.viewcon, {
+                        marginTop: $.STATUS_HEIGHT + 50, transform: [{ perspective: 850 }, {
+                            rotateX: this.scrollRotate.interpolate({
+                                inputRange: [0, 1],
+                                outputRange: ['0deg', '180deg']
+                            })
+                        }]
+                    }]}>
+                        <View style={[{ backgroundColor: '#fff', flexDirection: 'row' },!this.paused&&{height:($.WIDTH-40)*9/16}]}>
+                            <View style={styles.poster}>
+                                <Image source={{ uri: this.img }} style={[styles.fullcon, styles.borR]} />
+                                <TouchableOpacity onPress={this.play} activeOpacity={.8} style={[styles.playbtn, { backgroundColor: _.Color }]}>
+                                    <Icon name='play-arrow' size={24} color='#fff' />
+                                </TouchableOpacity>
                             </View>
-                            <TouchableOpacity onPress={this.play} activeOpacity={.7} style={[styles.playbtn, { backgroundColor: _.Color }]}>
-                                <Icon name='play-arrow' size={20} color='#fff' />
-                                <Text style={styles.playtext}>播放</Text>
-                            </TouchableOpacity>
+                            <View style={styles.postertext}>
+                                <Text style={[styles.title, { color: _.Color }]}>{this.name}</Text>
+                                <Star style={styles.score} score={this.score} />
+                                {
+                                    this.status && <Text style={styles.status}>{this.status}</Text>
+                                }
+                                <Text style={styles.subtitle}>{this.area} / {this.release}</Text>
+                                <Text style={styles.subtitle}>{this.updateDate} 更新</Text>
+                                <View style={styles.sourceType}>
+                                    <Text style={styles.pickertitle}>来源 / </Text>
+                                    <Text style={[styles.pickertitle, { color: _.Color }]}>{this.Source.desc}</Text>
+                                    <Icon name='expand-more' size={20} color={_.Color} />
+                                    <Picker
+                                        style={styles.picker}
+                                        selectedValue={'pos' + this.Source.selectedPosition}
+                                        onValueChange={this.Source.getSource}
+                                        mode='dropdown'>
+                                        {
+                                            this.Source.sourceTypes.map((el, i) => <Picker.Item color={'#666'} key={i} label={el.desc + el.type || ''} value={'pos' + i} />)
+                                        }
+                                    </Picker>
+                                </View>
+                            </View>
                         </View>
-                    </View>
-                    <View style={styles.viewcon}>
-                        <Video
-                            source={{ uri: this.Source.playUrl }}
-                            style={styles.backgroundVideo}
-                            resizeMode="contain"
-                            controls={true}
-                            repeat={true}
-                            paused={false}
-                        />
-                    </View>
+                        <Animated.View style={[styles.videoCon, { transform: [{ rotateX: '180deg' }],
+                            zIndex: this.scrollRotate.interpolate({
+                                inputRange: [0,.499,.501, 1],
+                                outputRange: [-1,-1,1, 1]
+                            })
+                        }]}>
+                            <Video
+                                ref={(ref) => this.video = ref}
+                                source={{ uri: this.Source.playUrl }}
+                                style={styles.backgroundVideo}
+                                resizeMode="contain"
+                                controls={true}
+                                repeat={true}
+                                paused={this.paused}
+                            />
+                            <TouchableOpacity style={styles.closebtn} onPress={this.onClose} >
+                                <Icon name='clear' size={20} color='#fff' />
+                            </TouchableOpacity>
+                        </Animated.View>
+                    </Animated.View>
                     <View style={styles.viewcon}>
                         <SortTitle title={`剧集(${this.Source.sourceslen})`} />
-                        <MovieSource Source={this.Source} />
+                        <MovieSource Source={this.Source} onplayRotate={this.onplayRotate}/>
                     </View>
                     <View style={styles.viewcon}>
                         <SortTitle title='导演 / 主演' />
@@ -983,7 +1028,9 @@ const styles = StyleSheet.create({
         backgroundColor: '#f1f1f1',
         width: 110,
         height: 160,
-        marginHorizontal: 10
+        marginHorizontal: 10,
+        justifyContent:'center',
+        alignItems: 'center'
     },
     postertext: {
         flex: 1,
@@ -1004,14 +1051,14 @@ const styles = StyleSheet.create({
         color: '#666'
     },
     playbtn: {
+        position:'absolute',
+        zIndex:10,
         height: 34,
-        paddingRight: 15,
-        paddingLeft: 10,
+        width:34,
         borderRadius: 17,
-        marginTop: 10,
-        flexDirection: 'row',
-        alignSelf: 'flex-start',
-        alignItems: 'center'
+        justifyContent:'center',
+        alignItems: 'center',
+        opacity:.9
     },
     playtext: {
         fontSize: 14,
@@ -1135,9 +1182,8 @@ const styles = StyleSheet.create({
         position: 'absolute'
     },
     backgroundVideo: {
-        height: 200,
+        flex: 1,
         backgroundColor: '#000',
-        marginHorizontal: 10,
     },
     sourcedot: {
         position: 'absolute',
@@ -1147,5 +1193,19 @@ const styles = StyleSheet.create({
         height: 5,
         borderRadius: 5,
         opacity: 0
+    },
+    videoCon: {
+        position: 'absolute',
+        left: 10,
+        top: 10,
+        right: 10,
+        bottom: 10,
+        backgroundColor: '#000'
+    },
+    closebtn:{
+        position: 'absolute',
+        right: 0,
+        top: 0,
+        padding:10
     }
 })
