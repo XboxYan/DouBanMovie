@@ -7,7 +7,7 @@ HomeMore
 import React, { PureComponent } from 'react';
 import {
     Text,
-    Button,
+    BackHandler,
     StyleSheet,
     View,
 } from 'react-native';
@@ -37,10 +37,21 @@ export default class Comment extends PureComponent {
     }
 
     componentDidMount() {
+        BackHandler.addEventListener('hardwareBackPress', this.goBack);
         const { params:{id,total} } = this.props.navigation.state;
         this.id = id;
         this.total = total;
         this.getData();
+    }
+
+    componentWillUnmount() {
+        BackHandler.removeEventListener('hardwareBackPress', this.goBack); 
+    }
+
+    goBack = () => {
+        const { navigation } = this.props;
+        navigation.goBack();
+        return true;
     }
 
     @action

@@ -27,6 +27,7 @@ import Icon from 'react-native-vector-icons/MaterialIcons';
 import Touchable from '../../compoents/Touchable';
 import Loading from '../../compoents/Loading';
 import LoadView from '../../compoents/LoadView';
+import Star from '../../compoents/Star';
 import SearchStore from '../../util/SearchStore';
 import fetchData from '../../util/Fetch';
 
@@ -54,7 +55,11 @@ class MovieItem extends PureComponent {
 					source={{ uri: item.img }}
 				/>
 				<View style={styles.movietext}>
-					<Text numberOfLines={1} style={styles.moviename}>{item.name}</Text>
+                    <Text numberOfLines={1} style={styles.moviename}>{item.name}</Text>
+                    <Star score={item.score} isShowNum={false} />
+                    <Text style={styles.status}>{item.status||'无'}</Text>
+                    <Text style={styles.lastUpdateTime}>{item.lastUpdateTime}</Text>
+                    <Text style={styles.movieType}>{item.movieTypeName}</Text>
 				</View>
 			</Touchable>
 		)
@@ -136,7 +141,7 @@ class SearchResult extends PureComponent {
 	}
     render(){
         if (!this.isRender) {
-			return <Loading size='small' text='' />
+			return <Loading size='small' text='正在努力搜索中...' />
 		}
         return (
             <FlatList
@@ -145,8 +150,9 @@ class SearchResult extends PureComponent {
 				ListFooterComponent={this.renderFooter}
 				data={this.data}
 				onEndReached={this.loadMore}
-				onEndReachedThreshold={0.1}
-				keyExtractor={(item, index) => 'key' + index}
+                onEndReachedThreshold={0.1}
+                getItemLayout={(data, index) => ( {length: 140, offset: 140 * index, index} )}
+				keyExtractor={(item, index) => 'key' + item.movieId}
 				renderItem={this.renderItem}
 			/>
         )
@@ -279,10 +285,11 @@ export default class Search extends PureComponent {
         if(!this.isEmpty){
             this.text = '';
             this.isSearch = false;
+            return true;
         }else{
             navigation.goBack();
-        }
-        return true;
+            return true;
+        }      
     }
 
     render() {
@@ -302,7 +309,7 @@ export default class Search extends PureComponent {
                         underlineColorAndroid='transparent'
                         onSubmitEditing={this.onSubmit}
                         onChangeText={this.onEdit}
-                        placeholder='搜索视频'
+                        placeholder='搜索导演、影片、演员、类型'
                         returnKeyLabel='搜索'
                         placeholderTextColor='#909090'
                     />
@@ -434,14 +441,15 @@ const styles = StyleSheet.create({
     movieitem: {
 		backgroundColor: '#fff',
 		flexDirection: 'row',
-		paddingHorizontal: 10,
-		paddingVertical: 15,
-		borderBottomWidth: 1,
+		padding: 10,
+		//borderBottomWidth: 1,
 		borderColor: '#ececec',
 	},
 	movieimg: {
-		width: 100,
-		height: 150,
+		width: 85,
+        height: 120,
+        borderRadius:3,
+        backgroundColor:'#f1f1f1',
 		resizeMode: 'cover'
 	},
 	movietext: {
@@ -449,8 +457,33 @@ const styles = StyleSheet.create({
 		marginLeft: 15
 	},
 	moviename: {
-		marginTop: 5,
 		fontSize: 16,
-		color: '#474747',
-	},
+        color: '#474747',
+        marginBottom:3
+    },
+    status: {
+        fontSize: 10,
+        paddingHorizontal: 5,
+        marginVertical: 5,
+        paddingVertical: 1,
+        borderRadius: 1,
+        alignSelf: 'flex-start',
+        color: '#fff',
+        backgroundColor: 'rgba(0,0,0,.4)'
+    },
+    lastUpdateTime:{
+        fontStyle:'italic',
+        color:'#666',
+        fontSize:14,
+    },
+    movieType:{
+        backgroundColor: '#f1f1f1',
+        paddingHorizontal: 15,
+        paddingVertical:5,
+        alignSelf: 'flex-start',
+        borderRadius: 15,
+        fontSize:14,
+        color:'#666',
+        marginVertical:5
+    }
 })

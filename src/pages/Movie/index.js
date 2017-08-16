@@ -671,7 +671,7 @@ export default class MovieDetail extends PureComponent {
                 'User-Agent': 'api-client/1 com.douban.frodo'
             },
             par: {
-                id: this.doubanId
+                id: this.doubanId,
             }
         },
             (data) => {
@@ -681,28 +681,21 @@ export default class MovieDetail extends PureComponent {
             }
         )
     }
-    onBackAndroid = () => {
-        this.props.navigation.goBack();
-        return true
-    }
     componentDidMount() {
-        BackHandler.addEventListener('hardwareBackPress', this.onBackAndroid);
+        BackHandler.addEventListener('hardwareBackPress', this.goBack);
         const { params: { movieId } } = this.props.navigation.state;
         this.movieId = movieId;
         this.getData();
     }
     componentWillUnmount() {
-        BackHandler.removeEventListener('hardwareBackPress', this.onBackAndroid); 
+        BackHandler.removeEventListener('hardwareBackPress', this.goBack); 
     }
     goBack = () => {
         const { navigation } = this.props;
         navigation.goBack();
+        return true;
     }
     onScroll = (e) => {
-        // Animated.event(
-        //     [{ e:{nativeEvent: { contentOffset: { y: this.scrollTop } } }}],
-        //     { useNativeDriver: true }
-        // )
         this.scrollTop.setValue(e.nativeEvent.contentOffset.y);
     }
     play = () => {
@@ -778,7 +771,7 @@ export default class MovieDetail extends PureComponent {
                             <Text style={[styles.title, { color: _.Color }]}>{this.name}</Text>
                             <Star style={styles.score} score={this.score} />
                             {
-                                this.isRender && <Text style={styles.status}>{this.status}</Text>
+                                this.status && <Text style={styles.status}>{this.status}</Text>
                             }
                             <Text style={styles.subtitle}>{this.area} / {this.release}</Text>
                             <Text style={styles.subtitle}>{this.updateDate} 更新</Text>
