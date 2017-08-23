@@ -52,7 +52,7 @@ const StackNavigatorConfig = {
 }
 //StackNavigator
 const MainApp = StackNavigator({
-    Root: { screen: Root,path:'home/root' },
+    Root: { screen: Home },
     Search:{ screen: Search },
     MovieMore:{ screen: MovieMore },
     MovieDetail:{ 

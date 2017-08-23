@@ -20,6 +20,9 @@ class HistoryStore {
         .then(data=>{
             this.list = data;
         })
+        .catch(()=>{
+            this.list = [];
+        })
     }
 
     @action

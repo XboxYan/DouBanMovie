@@ -556,6 +556,8 @@ export default class MovieDetail extends PureComponent {
 
     @observable paused = true;
 
+    @observable isShowVideo = false;
+
     doubanId = null;
 
     @observable DoubanisNull = false;
@@ -706,8 +708,13 @@ export default class MovieDetail extends PureComponent {
         BackHandler.removeEventListener('hardwareBackPress', this.goBack);
     }
     goBack = () => {
-        const { navigation } = this.props;
-        navigation.goBack();
+        if(this.isShowVideo){
+            this.onplayRotate(false);
+            this.scrollview.getNode().scrollTo({y:0});
+        }else{
+            const { navigation } = this.props;
+            navigation.goBack();
+        }
         return true;
     }
     onScroll = (e) => {
@@ -733,6 +740,7 @@ export default class MovieDetail extends PureComponent {
                 //useNativeDriver: true
             }                              
         ).start();
+        this.isShowVideo = value;
         LayoutAnimation.easeInEaseOut();
         this.paused = !value;
     }
@@ -779,6 +787,7 @@ export default class MovieDetail extends PureComponent {
                     }]} />
                 </View>
                 <Animated.ScrollView
+                    ref={(ref) => this.scrollview = ref}
                     stickyHeaderIndices={[]}
                     scrollEventThrottle={.5} // <-- 设为1以确保滚动事件的触发频率足够密集
                     onScroll={Animated.event(

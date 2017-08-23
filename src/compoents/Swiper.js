@@ -24,13 +24,19 @@ export default class Swiper extends PureComponent {
         this.realWidth = e.layout.width;
     }
 
-    componentWillUpdate(nextProps, nextState) {
+    componentWillUpdate1(nextProps, nextState) {
         if (React.Children.count(this.props.children) != React.Children.count(nextProps.children)) {
             this.len = React.Children.count(nextProps.children);
             this.auto()
         }
 
     }
+
+    componentDidMount() {
+        this.len = React.Children.count(this.props.children);
+        this.auto()
+    }
+    
 
     auto = () => {
         this.cleartimer();

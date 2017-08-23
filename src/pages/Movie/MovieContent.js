@@ -1,6 +1,6 @@
 /*
 *
-Home
+Content
 *
 */
 
@@ -17,18 +17,15 @@ import {
     View,
 } from 'react-native';
 
-import { TabNavigator } from "react-navigation";
+import TabItem from '../../compoents/TabItem';
+import AppTop from '../../compoents/AppTop';
+import Loading from '../../compoents/Loading';
+import Swiper from '../../compoents/Swiper';
 
-import TabItem from '../compoents/TabItem';
-import AppTop from '../compoents/AppTop';
-import Loading from '../compoents/Loading';
-import Swiper from '../compoents/Swiper';
-import MovieContent from './Movie/MovieContent';
-
-import fetchData from '../util/Fetch';
+import fetchData from '../../util/Fetch';
 import { observable, action, computed } from 'mobx';
 import { observer } from 'mobx-react/native';
-import _ from '../theme';
+import _ from '../../theme';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 
 const MovieTitle = observer((props) => (
@@ -55,7 +52,7 @@ const MovieItem = (props) => (
         <Image
             style={styles.movieimg}
             source={{ uri: props.item.img }}
-            defaultSource={require('../img/img_place.png')}
+            defaultSource={require('../../img/img_place.png')}
         />
         <View style={styles.movietext}>
             <Text numberOfLines={1} style={styles.moviename}>{props.item.name}</Text>
@@ -82,9 +79,8 @@ const BannerItem = observer((props) => (
     </TouchableOpacity>
 ))
 
-
 @observer
-export default class Home extends PureComponent {
+export default class extends PureComponent {
     static navigationOptions = {
         tabBarIcon: ({ focused, tintColor }) => <TabItem label='推荐' icon='fire' active={focused} />,
     }
@@ -95,8 +91,6 @@ export default class Home extends PureComponent {
     }
 
     @observable data = {};
-
-    @observable TopTab = null;
 
     @observable isRender = false;
 
@@ -119,7 +113,7 @@ export default class Home extends PureComponent {
     getHot = () => {
         fetchData('hotPlay', {
             par: {
-                type: 3
+                type: this.props.id
             }
         },
             (data) => {
@@ -133,70 +127,7 @@ export default class Home extends PureComponent {
     }
 
     componentDidMount() {
-        let tabs = [
-            {
-                name: '热播',
-                id: 0
-            },
-            {
-                name: '电影',
-                id: 1
-            },
-            {
-                name: '电视',
-                id: 2
-            },
-            {
-                name: '动漫',
-                id: 3
-            },
-            {
-                name: '综艺',
-                id: 4
-            },
-            {
-                name: '少儿',
-                id: 5
-            },
-        ]
-        let tabRoute = {};
-        tabs.forEach((el, i) => {
-            let Con = () => <MovieContent id={el.id} navigation={this.props.navigation} />
-            tabRoute['Tab' + i] = {
-                screen: Con,
-                navigationOptions:{
-                    tabBarLabel:el.name
-                }
-            }
-        })
-        const TabNavigatorConfig = {
-            //animationEnabled: false,
-            lazy: true,
-            //backBehavior:'none',
-            //swipeEnabled: false,
-            tabBarOptions: {
-                style : {
-                    backgroundColor:_.Color,
-                },
-                pressColor:'rgba(0,0,0,.1)',
-                labelStyle :{
-                    fontSize:14
-                },
-                tabStyle :{
-                    padding:0,
-                    height:40,
-                },
-                indicatorStyle:{
-                    backgroundColor:'#fff',
-                    width:20,
-                    height:3,
-                    borderRadius:2,
-                    marginBottom:2
-                }
-            }
-        }
-        this.TopTab = TabNavigator(tabRoute, TabNavigatorConfig);
-        this.isRender = true;
+        this.getHot();
     }
 
     componentWillUpdate() {
@@ -217,11 +148,23 @@ export default class Home extends PureComponent {
         const { navigation } = this.props;
         return (
             <View style={styles.content}>
-                <AppTop title='推荐' navigation={navigation} />
                 {
-                    this.isRender &&
-                    <this.TopTab />
+                    this.isRender ?
+                    <SectionList
+                        ListHeaderComponent={this.renderHeader}
+                        initialNumToRender={1}
+                        renderItem={({ item }) => <MovieList data={item} navigation={navigation} />}
+                        //stickySectionHeadersEnabled={true}
+                        renderSectionHeader={({ section }) => <MovieTitle title={section.title} navigation={navigation} />}
+                        keyExtractor={(item, index) => "item" + index}
+                        //enableVirtualization={true}
+                        //removeClippedSubviews={false}
+                        sections={this.sections}
+                    />
+                    :
+                    <Loading/>
                 }
+
             </View>
         )
     }
