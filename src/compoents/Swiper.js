@@ -43,7 +43,7 @@ export default class Swiper extends PureComponent {
         this.timer = setInterval(()=>{
             this.pageIndex+=1;
             (this.pageIndex>=this.len)&&(this.pageIndex = 0);
-            this.viewpager.scrollTo({x:this.pageIndex*this.realWidth,animated: true})
+            this.viewpager.getNode().scrollTo({x:this.pageIndex*this.realWidth,animated: true})
         },5000)
     }
 
@@ -67,11 +67,13 @@ export default class Swiper extends PureComponent {
         const { style,dotColor } = this.props;
         return (
             <View style={[styles.content,style, { paddingBottom: 15 }]}>
-                <ScrollView
+                <Animated.ScrollView
                     ref={(viewpager) => this.viewpager = viewpager}
                     style={styles.content}
+                    scrollEventThrottle={1}
                     onScroll={Animated.event(
                         [{ nativeEvent: { contentOffset: { x: this.scrollX } } }],
+                        { useNativeDriver: true }
                     )}
                     overScrollMode = 'always'
                     onTouchStart={this.cleartimer}
@@ -104,7 +106,7 @@ export default class Swiper extends PureComponent {
                             }]}>{child}</Animated.View>
                         )
                     }
-                </ScrollView>
+                </Animated.ScrollView>
                 <View style={styles.dotwrap}>
                     {
                         React.Children.map(this.props.children, (child, index) =>

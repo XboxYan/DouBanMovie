@@ -6,211 +6,90 @@ Home
 
 import React, { PureComponent } from 'react';
 import {
-    Text,
     StyleSheet,
-    ScrollView,
-    SectionList,
     UIManager,
     LayoutAnimation,
-    Image,
-    TouchableOpacity,
     View,
 } from 'react-native';
 
-import { TabNavigator } from "react-navigation";
-
-import TabItem from '../compoents/TabItem';
 import AppTop from '../compoents/AppTop';
-import Loading from '../compoents/Loading';
-import Swiper from '../compoents/Swiper';
 import MovieContent from './Movie/MovieContent';
+import Movie from './Movie.js';
 
-import fetchData from '../util/Fetch';
 import { observable, action, computed } from 'mobx';
 import { observer } from 'mobx-react/native';
 import _ from '../theme';
-import Icon from 'react-native-vector-icons/MaterialIcons';
+import ScrollViewPager from 'react-native-scrollviewpager';
 
-const MovieTitle = observer((props) => (
-    <View style={styles.view_hd}>
-        <View style={[styles.line, { backgroundColor: _.Color }]} />
-        <Text style={styles.view_title}>{props.title}</Text>
-        <TouchableOpacity
-            disabled={!!!props.title}
-            activeOpacity={.8}
-            onPress={() => props.navigation.navigate('MovieMore', { id: props.id, title: props.title })}
-            style={styles.view_more}
-        >
-            <Text style={styles.view_moretext}>更多</Text>
-            <Icon name='navigate-next' size={20} color={_.Color} />
-        </TouchableOpacity>
-    </View>
-))
 
-const MovieItem = (props) => (
-    <TouchableOpacity
-        activeOpacity={.8}
-        onPress={() => props.navigation.navigate('MovieDetail', { movieId: props.item.movieId })}
-        style={styles.movieitem}>
-        <Image
-            style={styles.movieimg}
-            source={{ uri: props.item.img }}
-            defaultSource={require('../img/img_place.png')}
-        />
-        <View style={styles.movietext}>
-            <Text numberOfLines={1} style={styles.moviename}>{props.item.name}</Text>
-        </View>
-    </TouchableOpacity>
-)
+const tabBarOptions = {
+    tabconStyle: {
+        justifyContent: 'center',
+        //paddingHorizontal:15
+    },
+    style: {
+        backgroundColor: _.Color,
+    },
+    scrollEnabled: true,
+    tabStyle: {
+        height: 34,
+        paddingHorizontal: 15,
+        //width:100
+    },
+    labelStyle: {
+        fontSize: 15,
+        color: '#fff',
+    },
+    activeTintColor:'#fff',
+    indicatorStyle: {
+        backgroundColor: '#fff',
+        height: 3,
+        marginBottom:2,
+        borderRadius:2,
+        width: 20
+    }
+}
 
-const MovieList = (props) => (
-    <View style={styles.movielist}>
-        {
-            props.data.map((item, i) => <MovieItem key={item.movieId} item={item} navigation={props.navigation} />)
-        }
-    </View>
-)
-
-const BannerItem = observer((props) => (
-    <TouchableOpacity
-        activeOpacity={.9}
-        onPress={() => props.navigation.navigate('MovieDetail', { movieId: props.data.vid })}
-        style={styles.banner}
-    >
-        <Image style={styles.bannerimg} source={{ uri: props.data.img }} />
-        <Text style={styles.bannertext}>{props.data.desc || ' '}</Text>
-    </TouchableOpacity>
-))
-
+const tabs = [
+    {
+        name: '热播',
+        id: 0
+    },
+    {
+        name: '电影',
+        id: 1
+    },
+    {
+        name: '电视',
+        id: 2
+    },
+    {
+        name: '动漫',
+        id: 3
+    },
+    {
+        name: '综艺',
+        id: 4
+    },
+    {
+        name: '微电影',
+        id: 5
+    },
+    {
+        name: '少儿',
+        id: 6
+    },
+]
 
 @observer
 export default class Home extends PureComponent {
-    static navigationOptions = {
-        tabBarIcon: ({ focused, tintColor }) => <TabItem label='推荐' icon='fire' active={focused} />,
-    }
-
-    constructor(props) {
-        super(props);
-        UIManager.setLayoutAnimationEnabledExperimental && UIManager.setLayoutAnimationEnabledExperimental(true);
-    }
-
-    @observable data = {};
-
-    @observable TopTab = null;
-
-    @observable isRender = false;
-
-    @computed get bannerDatas() {
-        return this.data.bannerDatas || [{}];
-    }
-
-    @computed get viewItemModels() {
-        return this.data.viewItemModels || [{}, {}, {}, {}, {}, {}];
-    }
-
-    @computed get sections() {
-        return this.viewItemModels.map((el, i) => ({
-            data: [el.videos],
-            title: el.title,
-            key: "section" + i
-        }))
-    }
-
-    getHot = () => {
-        fetchData('hotPlay', {
-            par: {
-                type: 3
-            }
-        },
-            (data) => {
-                //LayoutAnimation.spring();
-                this.data = data.body;
-                this.isRender = true;
-                LayoutAnimation.spring();
-
-            }
-        )
-    }
-
+    
     componentDidMount() {
-        let tabs = [
-            {
-                name: '热播',
-                id: 0
-            },
-            {
-                name: '电影',
-                id: 1
-            },
-            {
-                name: '电视',
-                id: 2
-            },
-            {
-                name: '动漫',
-                id: 3
-            },
-            {
-                name: '综艺',
-                id: 4
-            },
-            {
-                name: '少儿',
-                id: 5
-            },
-        ]
-        let tabRoute = {};
-        tabs.forEach((el, i) => {
-            let Con = () => <MovieContent id={el.id} navigation={this.props.navigation} />
-            tabRoute['Tab' + i] = {
-                screen: Con,
-                navigationOptions:{
-                    tabBarLabel:el.name
-                }
-            }
-        })
-        const TabNavigatorConfig = {
-            //animationEnabled: false,
-            lazy: true,
-            //backBehavior:'none',
-            //swipeEnabled: false,
-            tabBarOptions: {
-                style : {
-                    backgroundColor:_.Color,
-                },
-                pressColor:'rgba(0,0,0,.1)',
-                labelStyle :{
-                    fontSize:14
-                },
-                tabStyle :{
-                    padding:0,
-                    height:40,
-                },
-                indicatorStyle:{
-                    backgroundColor:'#fff',
-                    width:20,
-                    height:3,
-                    borderRadius:2,
-                    marginBottom:2
-                }
-            }
-        }
-        this.TopTab = TabNavigator(tabRoute, TabNavigatorConfig);
-        this.isRender = true;
+    
     }
 
     componentWillUpdate() {
         LayoutAnimation.easeInEaseOut();
-    }
-
-    renderHeader = () => {
-        return (
-            <Swiper dotColor={_.Color} style={styles.bannerWrap}>
-                {
-                    this.bannerDatas.map((el, i) => <BannerItem navigation={this.props.navigation} data={el} key={i + el.id} />)
-                }
-            </Swiper>
-        )
     }
 
     render() {
@@ -218,10 +97,14 @@ export default class Home extends PureComponent {
         return (
             <View style={styles.content}>
                 <AppTop title='推荐' navigation={navigation} />
-                {
-                    this.isRender &&
-                    <this.TopTab />
-                }
+                <ScrollViewPager tabBarOptions={tabBarOptions} >
+                    <Movie tablabel={'豆瓣榜单'} navigation={this.props.navigation} />
+                    {
+                        tabs.map((el,i)=>(
+                            <MovieContent tablabel={el.name} key={i} id={el.id} navigation={this.props.navigation} />
+                        ))
+                    }
+                </ScrollViewPager>
             </View>
         )
     }
@@ -229,95 +112,6 @@ export default class Home extends PureComponent {
 
 const styles = StyleSheet.create({
     content: {
-        flex: 1
-    },
-    view_hd: {
-        height: 40,
-        flexDirection: 'row',
-        alignItems: 'center',
-        paddingHorizontal: 10,
-        backgroundColor: '#fff'
-    },
-    line: {
-        height: 15,
-        width: 3,
-        marginRight: 10,
-    },
-    view_title: {
-        fontSize: 16,
-        color: '#333',
-        flex: 1
-    },
-    view_more: {
-        flexDirection: 'row',
-        alignSelf: 'stretch',
-        alignItems: 'center',
-    },
-    view_moretext: {
-        fontSize: 13,
-        color: '#999'
-    },
-    bannerWrap: {
-        backgroundColor: '#fff'
-    },
-    banner: {
-        flex: 1,
-        height: $.WIDTH * 9 / 16,
-        borderRadius: 3,
-        backgroundColor: '#f1f1f1',
-        overflow: 'hidden'
-    },
-    bannerimg: {
-        width: '100%',
-        height: '100%',
-        resizeMode: 'cover',
-        borderRadius: 3
-    },
-    bannertext: {
-        fontSize: 16,
-        color: '#fff',
-        paddingHorizontal: 10,
-        paddingVertical: 7,
-        position: 'absolute',
-        //backgroundColor:'rgba(0,0,0,.3)',
-        textShadowColor: '#000',
-        textShadowOffset: { width: 0, height: 2 },
-        textShadowRadius: 20,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        //borderBottomLeftRadius: 3,
-        //borderBottomRightRadius: 3,
-    },
-    movielist: {
-        flex: 1,
-        backgroundColor: '#fff',
-        paddingHorizontal: 5,
-        paddingTop: 10,
-        flexDirection: 'row',
-        flexWrap: 'wrap',
-        marginBottom: 10,
-    },
-    movieitem: {
-        width: ($.WIDTH - 40) / 3,
-        marginHorizontal: 5,
-    },
-    movieimg: {
-        width: '100%',
-        height: ($.WIDTH - 40) / 2,
-        flex: 1,
-        borderRadius: 3,
-        resizeMode: 'cover'
-    },
-    movietext: {
-        alignItems: 'center',
-        height: 40,
-        flexDirection: 'row'
-    },
-    moviename: {
-        fontSize: 14,
-        color: '#333',
-        textAlign: 'center',
         flex: 1
     },
 })

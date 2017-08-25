@@ -28,6 +28,7 @@ import Touchable from '../../compoents/Touchable';
 import Loading from '../../compoents/Loading';
 import LoadView from '../../compoents/LoadView';
 import Star from '../../compoents/Star';
+import AnimatedView from '../../compoents/AnimatedView';
 import SearchStore from '../../util/SearchStore';
 import fetchData from '../../util/Fetch';
 
@@ -182,7 +183,7 @@ class SearchHistory extends PureComponent {
     render(){
         const {onSubmit} = this.props;
         return(
-            <View style={styles.search_h}>
+            <AnimatedView style={styles.search_h}>
                 <SortTitle title='搜索历史'>
                     {
                         SearchStore.size>0&&<TouchableOpacity onPress={this.onClear} style={styles.search_h_clear}><Text style={styles.search_h_text}>清空</Text></TouchableOpacity>
@@ -205,7 +206,7 @@ class SearchHistory extends PureComponent {
                     }
                     </View>
                 }          
-            </View>
+            </AnimatedView>
         )
     }
 }

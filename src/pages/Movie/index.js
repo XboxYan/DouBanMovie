@@ -552,6 +552,8 @@ export default class MovieDetail extends PureComponent {
 
     scrollRotate = new Animated.Value(0);
 
+    scrollRotateVideo = new Animated.Value(0);
+
     @observable movieId = '';
 
     @observable paused = true;
@@ -732,14 +734,24 @@ export default class MovieDetail extends PureComponent {
 
     @action
     onplayRotate = (value) => {
-        Animated.timing(
-            this.scrollRotate,
-            {
-                toValue: value?1:0,
-                duration: 500,
-                //useNativeDriver: true
-            }                              
-        ).start();
+        Animated.parallel([//同时执行
+            Animated.timing(
+                this.scrollRotate,
+                {
+                    toValue: value?1:0,
+                    duration: 500,
+                    //useNativeDriver: true
+                }                              
+            ),
+            Animated.timing(
+                this.scrollRotateVideo,
+                {
+                    toValue: value?1:0,
+                    duration: 500,
+                    //useNativeDriver: true
+                }                              
+            )
+        ]).start();
         this.isShowVideo = value;
         LayoutAnimation.easeInEaseOut();
         this.paused = !value;
@@ -789,7 +801,7 @@ export default class MovieDetail extends PureComponent {
                 <Animated.ScrollView
                     ref={(ref) => this.scrollview = ref}
                     stickyHeaderIndices={[]}
-                    scrollEventThrottle={.5} // <-- 设为1以确保滚动事件的触发频率足够密集
+                    scrollEventThrottle={1} // <-- 设为1以确保滚动事件的触发频率足够密集
                     onScroll={Animated.event(
                         [{ nativeEvent: { contentOffset: { y: this.scrollTop } } }],
                         { useNativeDriver: true } // <-- 加上这一行
@@ -812,7 +824,7 @@ export default class MovieDetail extends PureComponent {
                         marginTop: $.STATUS_HEIGHT + 50, transform: [{ perspective: 850 }, {
                             rotateX: this.scrollRotate.interpolate({
                                 inputRange: [0, 1],
-                                outputRange: ['0deg', '180deg']
+                                outputRange: ['0deg','180deg']
                             })
                         }]
                     }]}>
@@ -847,8 +859,8 @@ export default class MovieDetail extends PureComponent {
                                 </View>
                             </View>
                         </View>
-                        <Animated.View style={[styles.videoCon, { transform: [{ rotateX: '180deg' }],
-                            zIndex: this.scrollRotate.interpolate({
+                        <Animated.View style={[styles.videoCon, {
+                            zIndex: this.scrollRotateVideo.interpolate({
                                 inputRange: [0,.499,.501, 1],
                                 outputRange: [-1,-1,1, 1]
                             })
@@ -1217,7 +1229,8 @@ const styles = StyleSheet.create({
         top: 10,
         right: 10,
         bottom: 10,
-        backgroundColor: '#000'
+        backgroundColor: '#000',
+        transform: [{ rotateX: '180deg' }]
     },
     closebtn:{
         position: 'absolute',

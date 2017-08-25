@@ -22,7 +22,7 @@ import Loading from '../compoents/Loading';
 import MovieList from '../compoents/MovieList';
 
 import fetchData from '../util/Fetch';
-import { observable, action, computed} from 'mobx';
+import { observable, action, computed } from 'mobx';
 import { observer } from 'mobx-react/native';
 import _ from '../theme';
 import Icon from 'react-native-vector-icons/MaterialIcons';
@@ -32,7 +32,7 @@ const MovieTitle = observer((props) => (
         <Text style={styles.view_title}>{props.title}</Text>
         <TouchableOpacity
             disabled={!!!props.title}
-            onPress={()=>props.navigation.navigate('MovieMore',{id:props.id,title:props.title})}
+            onPress={() => props.navigation.navigate('MovieMore', { id: props.id, title: props.title })}
             style={styles.view_more}
         >
             <Text style={styles.view_moretext}>更多</Text>
@@ -56,21 +56,21 @@ export default class Movie extends PureComponent {
 
     @observable isRender = false;
 
-    @computed get doubanList(){
+    @computed get doubanList() {
         return this.data.doubanList;
     }
 
-    @computed get suggestions(){
+    @computed get suggestions() {
         return this.data.suggestions;
     }
 
-    @computed get doubanTopicList(){
-        return this.data.doubanTopicList||[,,,];
+    @computed get doubanTopicList() {
+        return this.data.doubanTopicList || [, , ,];
     }
 
     componentDidMount() {
-        fetchData('index',{},
-            (data)=>{
+        fetchData('index', {},
+            (data) => {
                 this.data = data.body;
                 this.isRender = true;
                 LayoutAnimation.spring();
@@ -78,35 +78,32 @@ export default class Movie extends PureComponent {
         )
     }
 
-    componentWillUpdate(){
+    componentWillUpdate() {
         //LayoutAnimation.easeInEaseOut();
     }
 
     render() {
         const { navigation } = this.props;
-        let [movie_score={},movie_free_stream={},movie_latest={},douban={}] = this.doubanTopicList;
+        let [movie_score = {}, movie_free_stream = {}, movie_latest = {}, douban = {}] = this.doubanTopicList;
         return (
-            <View style={styles.content}>
-                <AppTop title='榜单' />
-                <ScrollView style={styles.content}>
-                    <View style={styles.viewcon}>
-                        <MovieTitle title={douban.name||''} id={douban.id} navigation={navigation} />
-                        <MovieList isRender={this.isRender} data={douban.subjects} navigation={navigation} />
-                    </View>
-                    <View style={styles.viewcon}>
-                        <MovieTitle title={movie_free_stream.name||''} id={movie_free_stream.id} navigation={navigation} />
-                        <MovieList isRender={this.isRender} data={movie_free_stream.subjects} navigation={navigation} />
-                    </View>
-                    <View style={styles.viewcon}>
-                        <MovieTitle title={movie_latest.name||''} id={movie_latest.id} navigation={navigation} />
-                        <MovieList isRender={this.isRender} data={movie_latest.subjects} navigation={navigation} />
-                    </View>
-                    <View style={styles.viewcon}>
-                        <MovieTitle title={movie_score.name||''} id={movie_score.id} navigation={navigation} />
-                        <MovieList isRender={this.isRender} data={movie_score.subjects} navigation={navigation} />
-                    </View>
-                </ScrollView>
-            </View>
+            <ScrollView style={styles.content}>
+                <View style={styles.viewcon}>
+                    <MovieTitle title={douban.name || ''} id={douban.id} navigation={navigation} />
+                    <MovieList isRender={this.isRender} data={douban.subjects} navigation={navigation} />
+                </View>
+                <View style={styles.viewcon}>
+                    <MovieTitle title={movie_free_stream.name || ''} id={movie_free_stream.id} navigation={navigation} />
+                    <MovieList isRender={this.isRender} data={movie_free_stream.subjects} navigation={navigation} />
+                </View>
+                <View style={styles.viewcon}>
+                    <MovieTitle title={movie_latest.name || ''} id={movie_latest.id} navigation={navigation} />
+                    <MovieList isRender={this.isRender} data={movie_latest.subjects} navigation={navigation} />
+                </View>
+                <View style={styles.viewcon}>
+                    <MovieTitle title={movie_score.name || ''} id={movie_score.id} navigation={navigation} />
+                    <MovieList isRender={this.isRender} data={movie_score.subjects} navigation={navigation} />
+                </View>
+            </ScrollView>
         )
     }
 }
@@ -119,7 +116,7 @@ const styles = StyleSheet.create({
         marginBottom: 10,
         backgroundColor: '#fff',
         paddingVertical: 10,
-        minHeight:150
+        minHeight: 150
     },
     view_hd: {
         height: 16,
@@ -128,7 +125,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         paddingHorizontal: 10,
         marginVertical: 10,
-        marginLeft:10
+        marginLeft: 10
     },
     view_title: {
         fontSize: 16,
@@ -137,7 +134,7 @@ const styles = StyleSheet.create({
     },
     view_more: {
         flexDirection: 'row',
-        alignSelf:'stretch',
+        alignSelf: 'stretch',
         alignItems: 'center',
     },
     view_moretext: {
