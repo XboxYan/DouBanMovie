@@ -250,6 +250,7 @@ const styles = StyleSheet.create({
         height: ($.WIDTH - 40) / 2,
         flex: 1,
         borderRadius: 3,
+        backgroundColor:'#f1f1f1',
         resizeMode: 'cover'
     },
     movietext: {

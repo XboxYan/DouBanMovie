@@ -275,21 +275,6 @@ class SourceStore {
     }
 
     @action
-    regIkan = (s) => {
-        let document = {
-            getElementById: {
-                value: null
-            }
-        }
-        let a = eval(s).replace(/\('e'\+'2'\)/g, '');
-        alert(a)
-        let reg = /([\s\S]*)eval/g
-        const [_html, ikan2] = reg.exec(ikan);
-        eval(ikan2);
-        return e1r.join('');
-    }
-
-    @action
     //获取优酷utid
     getUtid = async () => {
         return await fetch('https://log.mmstat.com/eg.js', {
@@ -434,6 +419,7 @@ class SourceStore {
         let reg = /eval([\s\S]*)\nif\(is_mobile[\s\S]*xmlurl([\s\S]*)\+'}',/g;
         const [_html, ikanReg, getUrl] = reg.exec(html);
         let playInfo = await this.getPlayerInfo(ikanReg, getUrl);
+        alert(playInfo)
         let url = await this.regKankanUrl(playInfo);
         let realUrl = await this.getRealUrl(url);
         return realUrl;
@@ -482,7 +468,7 @@ class SourceStore {
         const { jsurl: [jsUrl], infourl: [infoUrl] } = headers;
         //ToastAndroid.show(infoUrl, ToastAndroid.SHORT);
         const [Url, referUrl, type, name] = infoUrl.split('####');
-        //alert(infoUrl)
+        alert(infoUrl)
         switch (type) {
             case 'kankan':
                 return await this.getKankan(Url,referUrl);
