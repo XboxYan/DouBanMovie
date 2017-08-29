@@ -277,18 +277,14 @@ class SourceStore {
     @action
     //获取优酷utid
     getUtid = async () => {
-        return await fetch('https://log.mmstat.com/eg.js', {
-            headers: {
-                'User-Agent': 'Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.90 Mobile Safari/537.36'
-            }
-        })
+        return await fetch('https://log.mmstat.com/eg.js')
             .then((response) => {
                 if (response.ok) {
                     return response.text();
                 }
             })
             .then((response) => {
-                let reg = /Etag\=([\s\S]*);goldlog/g
+                let reg = /Etag\="([\s\S]*)";goldlog/g
                 const [_html, utid] = reg.exec(response);
                 return utid;
             })

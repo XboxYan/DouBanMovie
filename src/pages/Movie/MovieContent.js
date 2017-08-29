@@ -12,6 +12,7 @@ import {
     SectionList,
     UIManager,
     LayoutAnimation,
+    InteractionManager,
     Image,
     TouchableOpacity,
     View,
@@ -127,7 +128,9 @@ export default class extends PureComponent {
     }
 
     componentDidMount() {
-        this.getHot();
+        InteractionManager.runAfterInteractions(() => {
+            this.getHot();
+        })
     }
 
     componentWillUpdate() {
