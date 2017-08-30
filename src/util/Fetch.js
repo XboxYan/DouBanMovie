@@ -1,5 +1,5 @@
 
-global.ip = '120.55.16.187/newmovie';
+global.ip = '';
 global.appVersion = '5.3.4';
 
 const API = {
@@ -47,9 +47,11 @@ getBase = async () => {
 }
 
 const fetchData = async (url, { headers = { 'appVersion': appVersion }, par = {} } = {}, success, error = (err) => { console.warn(err) }) => {
-    global.ip = await getBase();
-    global.Base = `http://${ip}/api/`;
-    global._Base = `http://${ip}/btmovie/`;
+    if(!global.ip){
+        global.ip = await getBase();
+        global.Base = `http://${ip}/api/`;
+        global._Base = `http://${ip}/btmovie/`;
+    }
     const URL = API[url](par);
     fetch(URL, {
         method: 'GET',

@@ -25,6 +25,7 @@ import { observer } from 'mobx-react/native';
 import _ from '../../theme';
 import fetchData from '../../util/Fetch';
 import Md5 from '../../util/Md5';
+import CrytoJS,{get} from '../../util/CrytoJS';
 import Loading from '../../compoents/Loading';
 import Shadow from '../../compoents/Shadow';
 import Star from '../../compoents/Star';
@@ -246,6 +247,19 @@ class SourceStore {
     }
 
     @action
+    getRealSite = async (Url) => {
+        return await fetch(Url)
+            .then((response) => {
+                if (response.ok) {
+                    return response.text();
+                }
+            })
+            .catch((err) => {
+                console.log(err)
+            })
+    }
+
+    @action
     getPlayerInfo = async (ikanReg, getUrl) => {
         let document = {
             getElementById: {
@@ -378,29 +392,39 @@ class SourceStore {
 
     @action
     regKankanUrl = async (s) => {
+        if(!s.includes('解析成功')){
+            ToastAndroid.show('解析失败',ToastAndroid.SHORT);
+            return ''
+        }
         let reg = /\/\/\[parseArea\]([\s\S]*)\/\/\[\/parseArea\]/g;
         const [base, parseArea] = reg.exec(s);
-        if (parseArea.includes('youku')) {
+        if (parseArea.includes('ups.youku.com')) {
             //youku
             let reg = /params\=([\s\S]*);[\s\S]*vParser\=/g
             const [base, res] = reg.exec(parseArea);
             let params = JSON.parse(res);
             let url = await this.getYouku(params);
             return url;
-        } else if (parseArea.includes('qq')) {
+        } else if (parseArea.includes('h5vv.video.qq')) {
             //qq
             let reg = /params\=([\s\S]*);[\s\S]*vParser\=/g
             const [base, res] = reg.exec(parseArea);
-
             let params = eval('(' + res + ')');
             //alert(JSON.stringify(params))
             let url = await this.getQQ(params);
             return url;
-        } else if (parseArea.includes('vParse_Error')) {
-            return '解析失败'
+        } else if (parseArea.includes('play_url')) {
+            let reg = /play_url\='([\s\S]*)',file_type/g;
+            const [base, res] = reg.exec(parseArea);
+            return res
+        }  else if (parseArea.includes('purl')) {
+            let reg = /purl\s\=\s'([\s\S]*)';/g;
+            const [base, res] = reg.exec(parseArea);
+            return res
         } else {
             let reg = /vParse_Play\(([\s\S]*)\);/g
             const [base, res] = reg.exec(parseArea);
+            
             let _res = eval('(' + res + ')');
             return _res.urls[0].u;
         }
@@ -408,9 +432,13 @@ class SourceStore {
     }
 
     @action
-    getKankan = async (Url,referUrl) => {
-        let html = await this.getMovieInfo(Url,referUrl);
-        //alert(html)
+    getKankan = async (referUrl) => {
+        let Realhtml = await this.getRealSite(referUrl);
+        let realReg = /iframe[\s\S]*src\="([\s\S]*)&\?Next/g;
+        alert(Realhtml)
+        const [RealSite, RealUrl] = realReg.exec(Realhtml);
+        let html = await this.getMovieInfo(RealUrl,referUrl);
+        alert(html)
         //let reg = /urlplay1\D+'(\w+)';\D+tm\D+'(\d+)';\D+sign\D+'(\w+)';\D+refer\D+'(\S+)';\D+eval([\s\S]*)\nif\(is_mobile\D+getScript\(([\s\S]*)\);\n}/g;
         let reg = /eval([\s\S]*)\nif\(is_mobile[\s\S]*xmlurl([\s\S]*)\+'}',/g;
         const [_html, ikanReg, getUrl] = reg.exec(html);
@@ -423,7 +451,7 @@ class SourceStore {
 
     @action
     getKan360Url = async (Url) => {
-        return await fetch(`http://120.55.16.187/newmovie/btmovie/vparse?url=${Url}`)
+        return await fetch(`${_Base}vparsev2?url=${Url}`)
             .then(async (response) => {
                 if (response.ok) {
                     return response.json();
@@ -439,7 +467,29 @@ class SourceStore {
     }
 
     @action
+    get47ksInfo = async (Url) => {
+        return await fetch(`https://api.47ks.com/webcloud/?nip=127.0.0.1&v=${Url}`,{
+            headers: {
+                'Referer': 'https://api.47ks.com',
+            }
+        })
+            .then((response) => {
+                if (response.ok) {
+                    return response.text();
+                }
+            })
+            .catch((err) => {
+                console.log(err)
+            })
+    }
+
+    @action
     getKan360 = async (Url) => {
+        //47KS
+        let html = await this.get47ksInfo(Url);
+        let reg = /id\="get"\s*value\="(\w+)">[\s\S]*id\="tm"\svalue\="(\d+)">[\s\S]*config\/webmain\.php",\s([\s\S]*),[\s\S]*function\(data\)\{/g;
+        const [_html, get,tm,param] = reg.exec(html);
+        alert([get,tm,param])
         let playlist = await this.getKan360Url(Url);
         let realUrl = await this.getRealUrl(playlist, true);
         return realUrl;
@@ -467,7 +517,7 @@ class SourceStore {
         alert(infoUrl)
         switch (type) {
             case 'kankan':
-                return await this.getKankan(Url,referUrl);
+                return await this.getKankan(referUrl);
                 break;
             case 'kan360':
                 return await this.getKan360(Url);
