@@ -485,9 +485,13 @@ class SourceStore {
     }
 
     @action
-    get47ksgetk2 = async (k) => {
+    get47ksgetk2 = async (k,Url) => {
         let _k = eval('(' + k + ')').k;
-        return await fetch(`https://kr.47ks.com/getjson/?k=${_k}`)
+        return await fetch(`https://kr.47ks.com/getjson/?k=${_k}`,{
+            headers: {
+                'Referer': 'https://api.47ks.com/webcloud/?v='+Url,
+            }
+        })
             .then((response) => {
                 if (response.ok) {
                     return response.text();
@@ -513,17 +517,17 @@ class SourceStore {
     }
 
     @action
-    get47kssta = async (param) => {
-        alert(objToPara(param,false))
+    get47kssta = async (param,Url) => {
+        //alert(objToPara(param))
         return await fetch('https://api.47ks.com/config/webmain.php',{
             method:'POST',
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded',
                 'x-requested-with':'XMLHttpRequest',
-                'Accept':'application/json',
-                'Referer':'https://api.47ks.com/webcloud/',
+                'Accept':'application/json, text/javascript, */*; q=0.01',
+                'Referer':'https://api.47ks.com/webcloud/?v='+Url,
             },
-            body:objToPara(param,false)
+            body:objToPara(param)
         })
             .then((response) => {
                 if (response.ok) {
@@ -531,7 +535,7 @@ class SourceStore {
                 }
             })
             .then((response) => {
-                alert(JSON.stringify(response))
+                return decodeURIComponent(response.url);
             })
             .catch((err) => {
                 console.warn(err)
@@ -546,13 +550,13 @@ class SourceStore {
         const [_html, _get,tm,ptiqy,param,k] = reg.exec(html);
         //alert(param)
         const nip = ptiqy == 1?"127.0.0.1":"null";
-        const {k2,ep} = await this.get47ksgetk2(k);
+        const {k2,ep} = await this.get47ksgetk2(k,Url);
         const _param = param.replace(/\$\("#get"\)\.val\(\)/g,`"${_get}"`).replace(/\$\("#tm"\)\.val\(\)/g,`"${tm}"`);
         const __param = eval('(' + _param + ')');
-        await this.get47kssta(__param);
+        let playUrl = await this.get47kssta(__param,Url);
         //let playlist = await this.getKan360Url(Url);
-        //let realUrl = await this.getRealUrl(playlist, true);
-        return '';
+        let realUrl = await this.getRealUrl(playUrl, true);
+        return realUrl;
     }
 
     @action

@@ -20,7 +20,7 @@ function objToPara(obj, encode = true){
             const value = encode ? encodeURIComponent(obj[par]) : obj[par];
             paras += '&' + par + '=' + value;
         }
-        return paras;
+        return paras.slice(1);
     }
     return '';
 }
