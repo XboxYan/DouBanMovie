@@ -25,7 +25,7 @@ import { observer } from 'mobx-react/native';
 import _ from '../../theme';
 import fetchData from '../../util/Fetch';
 import Md5 from '../../util/Md5';
-import CrytoJS,{get} from '../../util/CrytoJS';
+import CrytoJS,{Get,objToPara} from '../../util/CrytoJS';
 import Loading from '../../compoents/Loading';
 import Shadow from '../../compoents/Shadow';
 import Star from '../../compoents/Star';
@@ -35,6 +35,7 @@ import Touchable from '../../compoents/Touchable';
 import CommentList from '../../compoents/CommentList';
 
 const md5 = Md5;
+const get = Get;
 
 const SortTitle = observer((props) => (
     <View style={[styles.view_hd, { borderColor: _.Color }]}>
@@ -468,7 +469,7 @@ class SourceStore {
 
     @action
     get47ksInfo = async (Url) => {
-        return await fetch(`https://api.47ks.com/webcloud/?nip=127.0.0.1&v=${Url}`,{
+        return await fetch(`https://api.47ks.com/webcloud/?v=${Url}`,{
             headers: {
                 'Referer': 'https://api.47ks.com',
             }
@@ -479,7 +480,61 @@ class SourceStore {
                 }
             })
             .catch((err) => {
-                console.log(err)
+                console.warn(err)
+            })
+    }
+
+    @action
+    get47ksgetk2 = async (k) => {
+        let _k = eval('(' + k + ')').k;
+        return await fetch(`https://kr.47ks.com/getjson/?k=${_k}`)
+            .then((response) => {
+                if (response.ok) {
+                    return response.text();
+                }
+            })
+            .then((response) => {
+                let res = eval(response);
+                let k2 = '';
+                let ep = '';
+                let nip = '';
+                if(res['code'] == 200){
+                    k2 = res['key'];
+                    ep = res['ep'];
+                }else{
+                    k2 = "null";
+                    ep = "null";
+                }
+                return {k2,ep}
+            })
+            .catch((err) => {
+                console.warn(err)
+            })
+    }
+
+    @action
+    get47kssta = async (param) => {
+        alert(objToPara(param,false))
+        return await fetch('https://api.47ks.com/config/webmain.php',{
+            method:'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'x-requested-with':'XMLHttpRequest',
+                'Accept':'application/json',
+                'Referer':'https://api.47ks.com/webcloud/',
+            },
+            body:objToPara(param,false)
+        })
+            .then((response) => {
+                if (response.ok) {
+                    return response.json();
+                }
+            })
+            .then((response) => {
+                alert(JSON.stringify(response))
+            })
+            .catch((err) => {
+                console.warn(err)
             })
     }
 
@@ -487,12 +542,17 @@ class SourceStore {
     getKan360 = async (Url) => {
         //47KS
         let html = await this.get47ksInfo(Url);
-        let reg = /id\="get"\s*value\="(\w+)">[\s\S]*id\="tm"\svalue\="(\d+)">[\s\S]*config\/webmain\.php",\s([\s\S]*),[\s\S]*function\(data\)\{/g;
-        const [_html, get,tm,param] = reg.exec(html);
-        alert([get,tm,param])
-        let playlist = await this.getKan360Url(Url);
-        let realUrl = await this.getRealUrl(playlist, true);
-        return realUrl;
+        let reg = /id\="get"\s*value\="(\w+)">[\s\S]*id\="tm"\svalue\="(\d+)">[\s\S]*ptiqy\s\=\s(\d);[\s\S]*config\/webmain\.php",\s([\s\S]*),[\s\S]*html5[\s\S]*getjson\/",\s([\s\S]*),[\s\S]*function\(kdata\)\{/g;
+        const [_html, _get,tm,ptiqy,param,k] = reg.exec(html);
+        //alert(param)
+        const nip = ptiqy == 1?"127.0.0.1":"null";
+        const {k2,ep} = await this.get47ksgetk2(k);
+        const _param = param.replace(/\$\("#get"\)\.val\(\)/g,`"${_get}"`).replace(/\$\("#tm"\)\.val\(\)/g,`"${tm}"`);
+        const __param = eval('(' + _param + ')');
+        await this.get47kssta(__param);
+        //let playlist = await this.getKan360Url(Url);
+        //let realUrl = await this.getRealUrl(playlist, true);
+        return '';
     }
 
     @action
