@@ -543,7 +543,7 @@ class SourceStore {
     }
 
     @action
-    getKan360 = async (Url) => {
+    get47ks = async (Url) => {
         //47KS
         let html = await this.get47ksInfo(Url);
         let reg = /id\="get"\s*value\="(\w+)">[\s\S]*id\="tm"\svalue\="(\d+)">[\s\S]*ptiqy\s\=\s(\d);[\s\S]*config\/webmain\.php",\s([\s\S]*),[\s\S]*html5[\s\S]*getjson\/",\s([\s\S]*),[\s\S]*function\(kdata\)\{/g;
@@ -557,6 +557,37 @@ class SourceStore {
         //let playlist = await this.getKan360Url(Url);
         let realUrl = await this.getRealUrl(playUrl, true);
         return realUrl;
+    }
+
+    @action
+    getFlvInfo = async (Url) => {
+        return await fetch(`https://api.flvsp.com/?url=${Url}`,{
+            headers: {
+                'Referer': 'https://api.flvsp.com',
+            }
+        })
+            .then((response) => {
+                if (response.ok) {
+                    return response.text();
+                }
+            })
+            .catch((err) => {
+                console.warn(err)
+            })
+    }
+
+    @action
+    getFlvsp = async (Url) => {
+        //Flvsp解析
+        let html = await this.getFlvInfo(Url);
+        alert(html)
+    }
+
+    @action
+    getKan360 = async (Url) => {
+        await this.getFlvsp(Url)
+        //let url =  await this.get47ks(Url);
+        //return url;
     }
 
     @action
