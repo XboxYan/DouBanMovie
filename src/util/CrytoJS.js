@@ -13,7 +13,7 @@ function Get(a) {
     return e.toString()
 }
 
-function objToPara(obj, encode = true){
+function objToPara(obj, encode = false){
     if(obj){
         let paras = '';
         for(par in obj){

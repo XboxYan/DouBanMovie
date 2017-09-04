@@ -563,7 +563,11 @@ class SourceStore {
     getFlvInfo = async (Url) => {
         return await fetch(`https://api.flvsp.com/?url=${Url}`,{
             headers: {
-                'Referer': 'https://api.flvsp.com',
+                'Referer': 'http://www.fuliw.top/vip/',
+                'Accept':'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8',
+                'Accept-Language':'zh-CN,zh;q=0.8',
+                'User-Agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.113 Safari/537.36',
+                'Upgrade-Insecure-Requests':1
             }
         })
             .then((response) => {
@@ -581,13 +585,53 @@ class SourceStore {
         //Flvsp解析
         let html = await this.getFlvInfo(Url);
         alert(html)
+        let reg = /;"\);([\s\S]*);\W\s+eval([\s\S]*)[\s\S]*var\sparseData\s\=\s([\s\S]*);[\s\S]*allowFullScreen/g;
+        const [_html,w, iReg, param] = reg.exec(html);
+        //let _w = w.replace(/\\\\/g,'');
+        //let lastKey = 0;
+        eval(w)
+        let _lastKey = lastKey;
+        let k = 0;
+        let k4 = null;
+        let document = {
+            getElementById: {
+                value: null
+            },
+            domain: 'api.flvsp.com'
+        }
+        function unlink(x){};$_SERVER = {PHP_SELF:0};
+        let s = eval(iReg).replace(/\('k'\+'2'\)/g, '')
+        eval(s);
+        //alert(JSON.stringify(s))
+        console.warn(_lastKey)
+        //alert(param.replace(/lastKey/g, _lastKey))
+        let _param = eval('('+param.replace(/lastKey/g, _lastKey).replace(/\$\("#k"\).val\(\)/g,k).replace(/\$\("#k2"\)\.val\(\)/g, document.getElementById.value)+')');
+        alert('https://api.flvsp.com/parse.php?h5url=null&script=1&'+objToPara(_param))
+        return await fetch('https://api.flvsp.com/parse.php?h5url=null&script=1&'+objToPara(_param), {
+            headers: {
+                'Referer': 'https://api.flvsp.com',
+                'Accept':'*/*',
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.113 Safari/537.36',
+            }
+        })
+            .then((response) => {
+                console.log(response)
+                if (response.ok) {
+                    return response.text();
+                }
+            })
+            .catch((err) => {
+                console.log(err)
+            })
     }
 
     @action
     getKan360 = async (Url) => {
-        await this.getFlvsp(Url)
-        //let url =  await this.get47ks(Url);
-        //return url;
+        let playInfo = await this.getFlvsp(Url);
+        //alert(playInfo)
+        alert(playInfo)
+        let url =  await this.get47ks(Url);
+        return url;
     }
 
     @action
