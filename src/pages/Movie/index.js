@@ -269,14 +269,17 @@ class SourceStore {
             domain: 'newplayer.dongyaodx.com'
         }
         let s = eval(ikanReg).replace(/\('e'\+'2'\)/g, '');
+        let reg = /id\=(\w+)\&tm/g;
+        let [a,b] = reg.exec(getUrl);
         eval(s);
+        let dysign = await this.getToken(b);
         let base = 'https://newplayer.dongyaodx.com/';
         let time = (new Date()).valueOf();
-        let Url = `${base}parse.php?h5url` + eval(`'` + getUrl.replace(/\('e2'\)/g, '')) + `&script=1&_=${time}`;
+        let Url = `${base}parse.php?dysign=${dysign}&h5url` + eval(`'` + getUrl.replace(/\('e2'\)/g, '')) + `&script=1&_=${time}`;
         return await fetch(Url, {
             headers: {
                 'Referer': base,
-                'User-Agent': 'Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.90 Mobile Safari/537.36'
+                //'User-Agent': 'Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.90 Mobile Safari/537.36'
             }
         })
             .then((response) => {
@@ -436,15 +439,16 @@ class SourceStore {
     getKankan = async (referUrl) => {
         let Realhtml = await this.getRealSite(referUrl);
         let realReg = /iframe[\s\S]*src\="([\s\S]*)&\?Next/g;
-        alert(Realhtml)
+        //alert(Realhtml)
         const [RealSite, RealUrl] = realReg.exec(Realhtml);
         let html = await this.getMovieInfo(RealUrl,referUrl);
-        alert(html)
+        //alert(html)
         //let reg = /urlplay1\D+'(\w+)';\D+tm\D+'(\d+)';\D+sign\D+'(\w+)';\D+refer\D+'(\S+)';\D+eval([\s\S]*)\nif\(is_mobile\D+getScript\(([\s\S]*)\);\n}/g;
         let reg = /eval([\s\S]*)\nif\(is_mobile[\s\S]*xmlurl([\s\S]*)\+'}',/g;
         const [_html, ikanReg, getUrl] = reg.exec(html);
+
         let playInfo = await this.getPlayerInfo(ikanReg, getUrl);
-        alert(playInfo)
+        //alert(playInfo)
         let url = await this.regKankanUrl(playInfo);
         let realUrl = await this.getRealUrl(url);
         return realUrl;
@@ -519,6 +523,7 @@ class SourceStore {
     @action
     get47kssta = async (param,Url) => {
         //alert(objToPara(param))
+        Object.assign(param,{'mode':'phone'});
         return await fetch('https://api.47ks.com/config/webmain.php',{
             method:'POST',
             headers: {
@@ -561,13 +566,10 @@ class SourceStore {
 
     @action
     getFlvInfo = async (Url) => {
-        return await fetch(`https://api.flvsp.com/?url=${Url}`,{
+        return await fetch(`https://api.vparse.org/?url=${Url}`,{
             headers: {
-                'Referer': 'http://www.fuliw.top/vip/',
+                'Referer': `http://www.52cbg.com/1.php?url=${Url}`,
                 'Accept':'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8',
-                'Accept-Language':'zh-CN,zh;q=0.8',
-                'User-Agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.113 Safari/537.36',
-                'Upgrade-Insecure-Requests':1
             }
         })
             .then((response) => {
@@ -584,7 +586,7 @@ class SourceStore {
     getFlvsp = async (Url) => {
         //Flvsp解析
         let html = await this.getFlvInfo(Url);
-        alert(html)
+        //alert(html)
         let reg = /;"\);([\s\S]*);\W\s+eval([\s\S]*)[\s\S]*var\sparseData\s\=\s([\s\S]*);[\s\S]*allowFullScreen/g;
         const [_html,w, iReg, param] = reg.exec(html);
         //let _w = w.replace(/\\\\/g,'');
@@ -597,7 +599,7 @@ class SourceStore {
             getElementById: {
                 value: null
             },
-            domain: 'api.flvsp.com'
+            domain: 'api.vparse.org'
         }
         function unlink(x){};$_SERVER = {PHP_SELF:0};
         let s = eval(iReg).replace(/\('k'\+'2'\)/g, '')
@@ -606,12 +608,10 @@ class SourceStore {
         console.warn(_lastKey)
         //alert(param.replace(/lastKey/g, _lastKey))
         let _param = eval('('+param.replace(/lastKey/g, _lastKey).replace(/\$\("#k"\).val\(\)/g,k).replace(/\$\("#k2"\)\.val\(\)/g, document.getElementById.value)+')');
-        alert('https://api.flvsp.com/parse.php?h5url=null&script=1&'+objToPara(_param))
-        return await fetch('https://api.flvsp.com/parse.php?h5url=null&script=1&'+objToPara(_param), {
+        //alert('https://api.flvsp.com/parse.php?h5url=null&script=1&'+objToPara(_param))
+        return await fetch('https://api.vparse.org/parse.php?h5url=null&script=1&'+objToPara(_param), {
             headers: {
-                'Referer': 'https://api.flvsp.com',
-                'Accept':'*/*',
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.113 Safari/537.36',
+                'Referer': 'https://api.vparse.org/',
             }
         })
             .then((response) => {
@@ -626,11 +626,31 @@ class SourceStore {
     }
 
     @action
+    getFlvUrl = async (Url) => {
+        //点量解析
+        return await fetch(`http://api.v2.flvurl.cn/parse/?singleOnly=true&appid=6170b6db0a881c18389f47d6d994340e&type=vod&url=${Url}`)
+            .then((response) => {
+                return response.json()
+            })
+            .then((response) => {
+                if(response.code == 0){
+                    return response.data.streams[response.data.streams.length-1].segs[0].url;
+                }else{
+                    ToastAndroid.show(response.message,ToastAndroid.SHORT);
+                }
+            })
+            .catch((err) => {
+                ToastAndroid.show('请求过于频繁，请稍后再试~',ToastAndroid.SHORT);
+            })
+    }
+
+    @action
     getKan360 = async (Url) => {
-        let playInfo = await this.getFlvsp(Url);
+        //let playInfo = await this.getFlvsp(Url);
         //alert(playInfo)
-        alert(playInfo)
-        let url =  await this.get47ks(Url);
+        //console.warn(playInfo)
+        //let url =  await this.get47ks(Url);
+        let url =  await this.getFlvUrl(Url);
         return url;
     }
 
@@ -653,7 +673,7 @@ class SourceStore {
         const { jsurl: [jsUrl], infourl: [infoUrl] } = headers;
         //ToastAndroid.show(infoUrl, ToastAndroid.SHORT);
         const [Url, referUrl, type, name] = infoUrl.split('####');
-        alert(infoUrl)
+        //alert(infoUrl)
         switch (type) {
             case 'kankan':
                 return await this.getKankan(referUrl);

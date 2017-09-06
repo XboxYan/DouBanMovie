@@ -1,6 +1,6 @@
 
 global.ip = '';
-global.appVersion = '5.3.4';
+global.appVersion = '5.6.0';
 
 const API = {
     //首页
@@ -46,7 +46,7 @@ getBase = async () => {
         })
 }
 
-const fetchData = async (url, { headers = { 'appVersion': appVersion }, par = {} } = {}, success, error = (err) => { console.warn(err) }) => {
+const fetchData = async (url, { headers = { 'appVersion': appVersion,'loginid':'1810534014633672706','token':'1810534014633672705' }, par = {} } = {}, success, error = (err) => { console.warn(err) }) => {
     if(!global.ip){
         global.ip = await getBase();
         global.Base = `http://${ip}/api/`;
